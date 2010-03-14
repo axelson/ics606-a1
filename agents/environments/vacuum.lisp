@@ -43,25 +43,27 @@
   (declare-ignore env)
   (setf (object-alive? agent-body) nil))
 
-(defmethod up ((env vacuum-world) agent-body)
-  (setf (object-heading agent-body)
-	'(0 1))
-  (forward env agent-body))
+(dolist (name-direction '((up (0 1)) ((down (0 -1))) ((left (-1 0))) ((right (1 0)))))
+  (format t "name: ~A direction: ~A~%" (car name-direction) (cadr name-direction))
+  (defmethod (car name-direction) ((env vacuum-world) agent-body)
+    (setf (object-heading agent-body)
+	  (second name-direction))
+    (forward env agent-body)
+    (check-sides env agent-body)))
 
-(defmethod down ((env vacuum-world) agent-body)
-  (setf (object-heading agent-body)
-	'(0 -1))
-  (forward env agent-body))
+(defmacro direction-generator (name direction)
+  `(defmethod ,name ((env vacuum-world) agent-body)
+     (setf (object-heading agent-body)
+	   ,direction)
+     (forward env agent-body)
+     (check-sides env agent-body)))
 
-(defmethod left ((env vacuum-world) agent-body)
-  (setf (object-heading agent-body)
-	'(-1 0))
-  (forward env agent-body))
+(progn
+  (direction-generator up '(0 1))
+  (direction-generator down '(0 -1))
+  (direction-generator left '(-1 0))
+  (direction-generator right '(1 0)))
 
-(defmethod right ((env vacuum-world) agent-body)
-  (setf (object-heading agent-body)
-	'(1 0))
-  (forward env agent-body))
 
 ;;;; Sensor-related functions
 (defun check-sides (env agent-body)

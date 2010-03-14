@@ -43,14 +43,6 @@
   (declare-ignore env)
   (setf (object-alive? agent-body) nil))
 
-(dolist (name-direction '((up (0 1)) ((down (0 -1))) ((left (-1 0))) ((right (1 0)))))
-  (format t "name: ~A direction: ~A~%" (car name-direction) (cadr name-direction))
-  (defmethod (car name-direction) ((env vacuum-world) agent-body)
-    (setf (object-heading agent-body)
-	  (second name-direction))
-    (forward env agent-body)
-    (check-sides env agent-body)))
-
 (defmacro direction-generator (name direction)
   `(defmethod ,name ((env vacuum-world) agent-body)
      (setf (object-heading agent-body)

@@ -1,0 +1,13 @@
+Notes
+
+To start
+(aima-load 'all)
+(run-environment (make-vacuum-world :aspec '(jason-vacuum)))
+(legal-actions (make-vacuum-world :aspec '(jason-vacuum)))
+
+Directions (come from unit vectors)
+1>: (1 0)
+1^: (0 1)
+1<: (-1 0)
+1V: (0 -1)
+

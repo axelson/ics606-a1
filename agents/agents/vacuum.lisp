@@ -40,11 +40,3 @@
 		;;			      (turn right) (turn left))))))))))
   "A very stupid agent: ignore percept and choose a random action.")
 
-;; Notes
-
-;;(aima-load 'all)
-;;(run-environment (make-vacuum-world :aspec '(jason-vacuum)))
-;;(legal-actions (make-vacuum-world :aspec '(jason-vacuum)))
-
-;; Directions
-;; (1 0): 1>

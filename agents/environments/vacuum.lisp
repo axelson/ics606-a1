@@ -44,5 +44,7 @@
   (setf (object-alive? agent-body) nil))
 
 (defmethod up ((env vacuum-world) agent-body)
-  (format t "go up ~A~%" (agent-body-heading agent-body))
-  (format t "done ~%"))
+  (setf (object-heading agent-body)
+	'(0 1))
+  (forward env agent-body))
+

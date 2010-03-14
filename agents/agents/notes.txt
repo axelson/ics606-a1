@@ -11,3 +11,4 @@ Directions (come from unit vectors)
 1<: (-1 0)
 1V: (0 -1)
 
+(format t "location: ~A~%" (object-loc agent-body))

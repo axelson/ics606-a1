@@ -25,3 +25,26 @@
   occasionally turn.  Always suck when there is dirt.")
 
 
+(defstructure (jason-vacuum 
+   (:include agent
+    (program 
+     #'(lambda (percept)
+         (destructuring-bind (bump dirt home) percept
+           (read-line)
+           (format t "~%Output: ")
+	   (cond (dirt 'suck)
+		 (bump '(turn right))
+		 (home 'forward)
+                 (t 'up)))))))
+		 ;;(t (random-element '(forward forward forward shut-off
+		;;			      (turn right) (turn left))))))))))
+  "A very stupid agent: ignore percept and choose a random action.")
+
+;; Notes
+
+;;(aima-load 'all)
+;;(run-environment (make-vacuum-world :aspec '(jason-vacuum)))
+;;(legal-actions (make-vacuum-world :aspec '(jason-vacuum)))
+
+;; Directions
+;; (1 0): 1>

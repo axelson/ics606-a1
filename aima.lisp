@@ -6,7 +6,10 @@
 
 ;;;; A minimal facility for defining systems of files
 
-(defparameter *aima-root* (truename "~/public_html/code/") ; <<<<<<<< Edit this <<<<<<
+;;(defparameter *aima-root* "~/ics606/"
+;(defparameter *aima-root* (truename "/home/jason/unison-root/data/programming/ics606")
+(defparameter *aima-root* (truename "/Users/jason/unison-root/data/programming/ics606")
+
   "The root directory where the code is stored.")
 
 (defparameter *aima-binary-type*
@@ -21,7 +24,7 @@
   binary files, insert the file type for your binaries before the <<<<
   and load systems with (aima-load-binary NAME).")
 
-(defconstant *aima-version*
+(defvar *aima-version*
   "0.99 AIMA Code, Appomattox Version, 09-Apr-2002")
 
 (defparameter *aima-system-names* nil

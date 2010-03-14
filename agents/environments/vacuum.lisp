@@ -30,7 +30,7 @@
 	  (if (equal loc (grid-environment-start env)) 'home))))
 
 (defmethod legal-actions ((env vacuum-world))
-  '(suck forward turn shut-off))
+  '(suck forward turn shut-off up down left right))
 
 ;;;; Actions (other than the basic grid actions of forward and turn)
 
@@ -43,3 +43,6 @@
   (declare-ignore env)
   (setf (object-alive? agent-body) nil))
 
+(defmethod up ((env vacuum-world) agent-body)
+  (format t "go up ~A~%" (agent-body-heading agent-body))
+  (format t "done ~%"))

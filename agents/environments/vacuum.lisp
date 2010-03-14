@@ -48,3 +48,18 @@
 	'(0 1))
   (forward env agent-body))
 
+(defmethod down ((env vacuum-world) agent-body)
+  (setf (object-heading agent-body)
+	'(0 -1))
+  (forward env agent-body))
+
+(defmethod left ((env vacuum-world) agent-body)
+  (setf (object-heading agent-body)
+	'(-1 0))
+  (forward env agent-body))
+
+(defmethod right ((env vacuum-world) agent-body)
+  (setf (object-heading agent-body)
+	'(1 0))
+  (forward env agent-body))
+

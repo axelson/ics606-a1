@@ -64,9 +64,7 @@
 	 (down (list (first loc) (1- (second loc))))
 	 (left (list (1- (first loc)) (second loc)))
 	 (right (list (1+ (first loc)) (second loc))))
-    (format t "direction is: ~A~%" (map 'list #'(lambda (in) (open-loc? in env)) (list up down left right)))
-    (format t "right is: ~A~%" (free-loc? right env))
-    (format t "left is: ~A~%" (free-loc? left env))))
+    (map 'list #'(lambda (in) (open-loc? in env)) (list up down left right))))
 
 (defun open-loc? (loc env)
   "A location is open if there is no obstacle there."

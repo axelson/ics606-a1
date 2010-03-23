@@ -29,7 +29,7 @@
 	  (if (find-object-if #'dirt-p loc env) 'dirt)
 	  (if (equal loc (grid-environment-start env)) 'home)
 	  (check-sides env (agent-body agent)))
-	  )))
+	  ))
 
 (defmethod legal-actions ((env vacuum-world))
   '(suck forward turn shut-off up down left right))

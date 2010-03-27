@@ -29,7 +29,7 @@
    (:include agent
     (program 
      #'(lambda (percept)
-         (destructuring-bind (bump dirt home) percept
+         (destructuring-bind (bump dirt home directions) percept
            (read-line)
            (format t "~%Output: ")
 	   (cond (dirt 'suck)

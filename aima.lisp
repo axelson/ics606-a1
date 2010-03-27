@@ -7,8 +7,8 @@
 ;;;; A minimal facility for defining systems of files
 
 ;;(defparameter *aima-root* "~/ics606/"
-;(defparameter *aima-root* (truename "/home/jason/unison-root/data/programming/ics606")
-(defparameter *aima-root* (truename "/Users/jason/unison-root/data/programming/ics606")
+(defparameter *aima-root* (truename "/home/jason/unison-root/data/programming/ics606")
+;(defparameter *aima-root* (truename "/Users/jason/unison-root/data/programming/ics606")
 
   "The root directory where the code is stored.")
 

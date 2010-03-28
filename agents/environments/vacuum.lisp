@@ -8,6 +8,106 @@
 
 (defstructure (cat (:include obstacle (name "C") (size 0.01))))
 
+(defun read-room ()
+  (with-open-file (infile "a1inputspecification.txt")
+    (let ((room-x) (room-y) (max-time) (dirt-factor) (num-cats) (cats) (furniture) (num 0))
+      (loop
+        with section = 1
+        for line = (read-line infile nil 'eof)
+        until (eq line 'eof)
+        do (progn
+             (print line)
+             (cond
+               ((= section 1)           ;Room size
+                (read-both-numbers line room-x room-y)
+                (format t "room is: ~A by ~A~%" room-x room-y)
+                (incf section))
+               ((= section 2)           ;time limit
+                (setf max-time (read-first-number line))
+                (format t "~%max-time: ~A~%" max-time)
+                (incf section))
+               ((= section 3)           ;Dirt factor
+                (setf dirt-factor (read-first-number line))
+                (format t "~%dirt-factor: ~A~%" dirt-factor)
+                (incf section))
+               ((= section 4)           ;Num Cats
+                (setf num-cats (read-first-number line))
+                (format t "~%num-cats: ~A~%" num-cats)
+                (incf section))
+               ((= section 5)           ;Reading in Cats
+                (dotimes (num num-cats)
+                  (let ((cat-x) (cat-y) (shedding-factor))
+                    (read-both-numbers line cat-x cat-y)
+                    (setf line (read-line infile))
+                    (setf shedding-factor (read-first-number line))
+                    (format t "~%cat ~A: loc(~A,~A) ~A~%" num cat-x cat-y shedding-factor)
+                    (setf cats (append cats '((cat-x cat-y shedding-factor))))
+                    (setf line (read-line infile))
+                    ))
+                (incf section))
+               ((= section 6)           ;Reading in Furniture
+                (let ((furniture-startx) (furniture-starty) (furniture-endx) (furniture-endy))
+                  (read-both-numbers line furniture-startx furniture-starty)
+                  (setf line (read-line infile nil))
+                  (when line
+                    (read-both-numbers line furniture-endx furniture-endy)
+                    (format t "~%furniture ~A: start(~A,~A) end(~A,~A)~%"
+                            num furniture-startx furniture-starty furniture-endx furniture-endy)
+                    (incf num)            ;Num is just for printing number of furniture
+                    (setf furniture (append furniture '(((furniture-startx furniture-starty)
+                                                         (furniture-endx furniture-endy)))))
+                    )))
+               (t (format t "~%~%at end~%"))
+               ;;(format t "~%on section: ~A" section)
+               ))))))
+  (@ 12 8))
+
+
+;; Only works in interpretter
+(defmacro print-var (var1)
+  `(progn
+     (format t "var: ~A" ,var1)
+     (format t "value: ~A" (eval ,var1))))
+
+;; Only works in interpretter
+(defmacro print-vars (&rest vars)
+  `(progn
+     (dolist (var ',vars)
+       (format t "~A: ~A " var (eval var)))))
+
+;  `(format t "vars: ~A" ,vars))
+
+(defun read-room-size-simple (instring)
+  (let ((first-number)
+        (second-number)
+        (position))
+    (multiple-value-setq (first-number position)
+      (parse-integer instring))
+    (format t "one: ~A two: ~A~%" first-number position)))
+
+(defun read-first-number (instring)
+  (parse-integer instring :junk-allowed t))
+
+(defun read-second-number (instring)
+  (let ((first-number)
+        (second-number)
+        (position))
+    (multiple-value-setq (first-number position)
+      (parse-integer instring :junk-allowed t))
+    (setf second-number (parse-integer instring :start position :junk-allowed t))
+    (format t "one: ~A two: ~A~%" first-number second-number)
+    second-number))
+
+(defmacro read-both-numbers (instring first-number second-number)
+  `(progn
+     (let ((position))
+       (multiple-value-setq (,first-number position)
+         (parse-integer ,instring :junk-allowed t))
+       (setf ,second-number (parse-integer ,instring :start position :junk-allowed t)))
+     ;(format t "first: ~A second: ~A~%" ,first-number ,second-number)
+     ))
+
+
 (defstructure (vacuum-world (:include grid-environment
     (size (@ 8 8))
     (aspec '(random-vacuum-agent))

@@ -59,7 +59,7 @@
                     )))
                (t (format t "~%~%at end~%"))
                ;;(format t "~%on section: ~A" section)
-               ))))))
+               )))))
   (@ 12 8))
 
 
@@ -106,12 +106,18 @@
        (setf ,second-number (parse-integer ,instring :start position :junk-allowed t)))
      ;(format t "first: ~A second: ~A~%" ,first-number ,second-number)
      ))
-
+  
 
 (defstructure (vacuum-world (:include grid-environment
-    (size (@ 8 8))
+    (size (read-room))
+    ;;    (size (@ 12 8))
     (aspec '(random-vacuum-agent))
-    (cspec '((at all (P 0.25 dirt))))))
+    (cspec '((at all (P 0.55 dirt))
+             (at all (P 0.008 furniture))
+             (at all (P 0.008 cat))
+             (at (2 3) (* 8 dirt))
+             ))
+    (file "file")))
   "A grid with some dirt in it, and by default a reactive vacuum agent.")
 
 ;;;; Defining the generic functions
@@ -132,7 +138,8 @@
     (list (if (object-bump (agent-body agent)) 'bump)
 	  (if (find-object-if #'dirt-p loc env) 'dirt)
 	  (if (equal loc (grid-environment-start env)) 'home)
-	  (check-sides env (agent-body agent)))
+	  (check-sides env (agent-body agent))
+          (check-dirt env (agent-body agent)))
 	  ))
 
 (defmethod legal-actions ((env vacuum-world))
@@ -154,6 +161,8 @@
      (setf (object-heading agent-body)
 	   ,direction)
      (forward env agent-body)
+     (format t "~%object max contents: ~A" (object-max-contents agent-body))
+     (format t "~%current contents: ~A" (sum (object-contents agent-body) #'object-size))
      (check-sides env agent-body)))
 
 (progn
@@ -170,8 +179,22 @@
 	 (down (list (first loc) (1- (second loc))))
 	 (left (list (1- (first loc)) (second loc)))
 	 (right (list (1+ (first loc)) (second loc))))
-    (map 'list #'(lambda (in) (open-loc? in env)) (list up down left right))))
+    (map 'list #'(lambda (in) (open-loc? in env)) (list up right down left))))
+
+(defun check-dirt (env agent-body)
+  (let* ((loc (object-loc agent-body))
+	 (up (list (first loc) (1+ (second loc))))
+	 (down (list (first loc) (1- (second loc))))
+	 (left (list (1- (first loc)) (second loc)))
+	 (right (list (1+ (first loc)) (second loc))))
+    (map 'list #'(lambda (in) (get-dirt in env)) (list up right down left))))
+
 
 (defun open-loc? (loc env)
   "A location is open if there is no obstacle there."
   (not (find-object-if #'obstacle-p loc env)))
+
+(defun get-dirt (loc env)
+  "Gets the amount of dirt in that location"
+  ;(find-object-if #'(lambda (in) (string= (object-name in) "dirt")) loc env))
+  (find-object-if #'dirt-p loc env))

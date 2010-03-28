@@ -12,3 +12,6 @@ Directions (come from unit vectors)
 1V: (0 -1)
 
 (format t "location: ~A~%" (object-loc agent-body))
+
+size of room
+environments/vacuum.lisp

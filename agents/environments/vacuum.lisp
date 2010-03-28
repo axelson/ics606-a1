@@ -173,22 +173,19 @@
 
 
 ;;;; Sensor-related functions
-(defun check-sides (env agent-body)
-  (let* ((loc (object-loc agent-body))
-	 (up (list (first loc) (1+ (second loc))))
-	 (down (list (first loc) (1- (second loc))))
-	 (left (list (1- (first loc)) (second loc)))
-	 (right (list (1+ (first loc)) (second loc))))
-    (map 'list #'(lambda (in) (open-loc? in env)) (list up right down left))))
+(defmacro make-check-fn (name check-fn)
+  `(defun ,name (env agent-body)
+     (let* ((loc (object-loc agent-body))
+            (up (list (first loc) (1+ (second loc))))
+            (down (list (first loc) (1- (second loc))))
+            (left (list (1- (first loc)) (second loc)))
+            (right (list (1+ (first loc)) (second loc))))
+       (map 'list ,check-fn (list up right down left)))))
 
-(defun check-dirt (env agent-body)
-  (let* ((loc (object-loc agent-body))
-	 (up (list (first loc) (1+ (second loc))))
-	 (down (list (first loc) (1- (second loc))))
-	 (left (list (1- (first loc)) (second loc)))
-	 (right (list (1+ (first loc)) (second loc))))
-    (map 'list #'(lambda (in) (get-dirt in env)) (list up right down left))))
 
+(progn
+  (make-check-fn check-sides #'(lambda (in) (open-loc? in env)))
+  (make-check-fn check-dirt #'(lambda (in) (get-dirt in env))))
 
 (defun open-loc? (loc env)
   "A location is open if there is no obstacle there."

@@ -21,6 +21,8 @@
 
 (defun read-room ()
   (with-open-file (infile "a1inputspecification.txt")
+    (setf cats '())
+    (setf furniture '())
     (let ((num 0))
       (format t "room-x: ~A~%" room-x)
       (loop
@@ -53,7 +55,7 @@
                     (setf line (read-line infile))
                     (setf shedding-factor (read-first-number line))
                     (format t "~%cat ~A: loc(~A,~A) ~A~%" num cat-x cat-y shedding-factor)
-                    (setf cats (append cats '((cat-x cat-y shedding-factor))))
+                    (setf cats (append cats (list (list cat-x cat-y shedding-factor))))
                     (setf line (read-line infile))
                     ))
                 (incf section))

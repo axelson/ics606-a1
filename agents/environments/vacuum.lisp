@@ -134,6 +134,10 @@
   ;; Read file to set the global variables
   (read-room)
   `((at all (P 0.08 furniture))
+    ,(loop for cat in cats
+           collecting (list 'at (car cat) (cadr cat)) into mycats
+       do (format t "cat:~A~%" cat)
+           finally (return mycats))
     (at all (P 0.08 cat))
     (at free? (P ,(/ dirt-factor 10) dirt))
     ))

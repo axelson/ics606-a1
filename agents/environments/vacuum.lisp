@@ -8,9 +8,21 @@
 
 (defstructure (cat (:include obstacle (name "C") (size 0.01))))
 
+(progn
+  (defparameter room-x 0)
+  (defparameter room-y 0)
+  (defparameter max-time 0)
+  (defparameter dirt-factor 0)
+  (defparameter num-cats 0)
+  (defparameter cats '())
+  (defparameter furniture '())
+  )
+
+
 (defun read-room ()
   (with-open-file (infile "a1inputspecification.txt")
-    (let ((room-x) (room-y) (max-time) (dirt-factor) (num-cats) (cats) (furniture) (num 0))
+    (let ((num 0))
+      (format t "room-x: ~A~%" room-x)
       (loop
         with section = 1
         for line = (read-line infile nil 'eof)
@@ -59,8 +71,7 @@
                     )))
                (t (format t "~%~%at end~%"))
                ;;(format t "~%on section: ~A" section)
-               )))))
-  (@ 12 8))
+               ))))))
 
 
 ;; Only works in interpretter
@@ -79,7 +90,6 @@
 
 (defun read-room-size-simple (instring)
   (let ((first-number)
-        (second-number)
         (position))
     (multiple-value-setq (first-number position)
       (parse-integer instring))

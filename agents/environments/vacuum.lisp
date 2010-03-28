@@ -139,7 +139,8 @@
 	  (if (find-object-if #'dirt-p loc env) 'dirt)
 	  (if (equal loc (grid-environment-start env)) 'home)
 	  (check-sides env (agent-body agent))
-          (check-dirt env (agent-body agent)))
+          (check-dirt env (agent-body agent))
+          (check-furniture env (agent-body agent)))
 	  ))
 
 (defmethod legal-actions ((env vacuum-world))
@@ -185,11 +186,17 @@
 
 (progn
   (make-check-fn check-sides #'(lambda (in) (open-loc? in env)))
+  (make-check-fn check-furniture #'(lambda (in) (furniture-loc? in env)))
   (make-check-fn check-dirt #'(lambda (in) (get-dirt in env))))
 
 (defun open-loc? (loc env)
   "A location is open if there is no obstacle there."
   (not (find-object-if #'obstacle-p loc env)))
+
+(defun furniture-loc? (loc env)
+  "Checks if a location has furniture"
+  (find-object-if #'furniture-p loc env))
+
 
 (defun get-dirt (loc env)
   "Gets the amount of dirt in that location"

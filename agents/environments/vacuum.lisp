@@ -118,17 +118,23 @@
      ))
   
 
+;; Call (read-room) before this function to populate global variables
 (defstructure (vacuum-world (:include grid-environment
-    (size (read-room))
+    (size (@ room-x room-y))
     ;;    (size (@ 12 8))
     (aspec '(random-vacuum-agent))
-    (cspec '((at all (P 0.55 dirt))
-             (at all (P 0.008 furniture))
-             (at all (P 0.008 cat))
-             (at (2 3) (* 8 dirt))
-             ))
-    (file "file")))
+    (cspec (generate-cspec))
+    ))
   "A grid with some dirt in it, and by default a reactive vacuum agent.")
+
+(defun generate-cspec ()
+  "Generates appropriate cspec for vacuum world"
+  ;; Read file to set the global variables
+  (read-room)
+  `((at all (P 0.08 furniture))
+    (at all (P 0.08 cat))
+    (at free? (P ,(/ dirt-factor 10) dirt))
+    ))
 
 ;;;; Defining the generic functions
 

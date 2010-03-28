@@ -5,9 +5,9 @@
 6 8    // start coord of cat 1
 2      // shedding factor of cat 1
 16 4   // start coord of cat 2
-2      // etc
+2      // Shedding factor of cat 2
 2 4    // start coord of cat 3
-1
+1      // Shedding factor of cat 3
 // pieces of furniture, each piece is rectangular 
 2 2  // furniture #1 start x y
 2 3  // furniture #1 end x y

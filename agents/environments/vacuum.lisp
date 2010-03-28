@@ -4,6 +4,10 @@
 
 (defstructure (dirt (:include object (name "*") (size 0.01))))
 
+(defstructure (furniture (:include obstacle (name "F") (size 0.01))))
+
+(defstructure (cat (:include obstacle (name "C") (size 0.01))))
+
 (defstructure (vacuum-world (:include grid-environment
     (size (@ 8 8))
     (aspec '(random-vacuum-agent))

@@ -1,4 +1,4 @@
-20  20   // x-dimension of room   // y-dimension of room
+15  16   // x-dimension of room   // y-dimension of room
 1600 // minimum simulation time units
 3    // initial dirt factor of room
 3    // # cats

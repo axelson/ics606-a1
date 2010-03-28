@@ -133,14 +133,20 @@
   "Generates appropriate cspec for vacuum world"
   ;; Read file to set the global variables
   (read-room)
-  `((at all (P 0.08 furniture))
-    ,(loop for cat in cats
-           collecting (list 'at (car cat) (cadr cat)) into mycats
-       do (format t "cat:~A~%" cat)
-           finally (return mycats))
-    (at all (P 0.08 cat))
-    (at free? (P ,(/ dirt-factor 10) dirt))
-    ))
+  (let ((returnlist '()))
+    (setf returnlist (append returnlist '(at all (P 0.08 furniture))))
+    (format t "returnlist: ~A~%" returnlist)
+    (setf returnlist
+          (append returnlist
+                  (loop for cat in cats
+                        collecting (list 'at (car cat) (cadr cat)) into mycats
+                        do (format t "cat:~A~%" cat)
+                        finally (return mycats))))
+
+    (format t "returnlist: ~A~%" returnlist)
+    '(at all (P 0.08 cat))
+    '(at free? (P (/ dirt-factor 10) dirt))
+    returnlist))
 
 ;;;; Defining the generic functions
 

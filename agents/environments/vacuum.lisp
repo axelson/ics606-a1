@@ -148,6 +148,15 @@
     '(at free? (P (/ dirt-factor 10) dirt))
     returnlist))
 
+(defun flatten (inlist)
+  "Removes nestings from a list."
+  (cond ((atom inlist) inlist)
+        ((listp (car inlist))
+         (append (flatten (car inlist)) (flatten (cdr inlist)))
+         )
+        (t (append (list (car inlist)) (flatten (cdr inlist))))))
+
+
 ;;;; Defining the generic functions
 
 (defmethod performance-measure ((env vacuum-world) agent)

@@ -151,12 +151,13 @@
                         finally (return mycats))))
 
     ;; Furniture
-    (dolist (item furniture)
-      (let ((startloc (car item))
-            (endloc (second item)))
-        (push
-         (generate-furniture startloc endloc)
-         returnlist)))
+    (setf returnlist
+          (append returnlist
+                  (loop for item in furniture
+                        for startloc = (first item)
+                        for endloc = (second item)
+                        appending (generate-furniture startloc endloc) into returnlist
+                        finally (return returnlist))))
     '(at all (P 0.08 cat))
     '(at free? (P (/ dirt-factor 10) dirt))
     returnlist))

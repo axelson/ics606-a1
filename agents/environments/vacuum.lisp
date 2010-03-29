@@ -68,8 +68,12 @@
                     (format t "~%furniture ~A: start(~A,~A) end(~A,~A)~%"
                             num furniture-startx furniture-starty furniture-endx furniture-endy)
                     (incf num)            ;Num is just for printing number of furniture
-                    (setf furniture (append furniture '(((furniture-startx furniture-starty)
-                                                         (furniture-endx furniture-endy)))))
+                    (setf furniture
+                          (append furniture (list (list (list
+                                                   furniture-startx furniture-starty)
+                                                  (list
+                                                   furniture-endx furniture-endy)))))
+                    (format t "current furniture: ~A~%" furniture)
                     )))
                (t (format t "~%~%at end~%"))
                ;;(format t "~%on section: ~A" section)

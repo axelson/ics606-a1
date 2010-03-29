@@ -24,6 +24,7 @@
                   (not (string= line "")))
         finally (return line)))
 
+
 (defun read-room ()
   (with-open-file (infile "a1inputspecification.txt")
     (setf cats '())
@@ -253,4 +254,7 @@
 (defun get-dirt (loc env)
   "Gets the amount of dirt in that location"
   ;(find-object-if #'(lambda (in) (string= (object-name in) "dirt")) loc env))
-  (find-object-if #'dirt-p loc env))
+  (if (find-object-if #'dirt-p loc env)
+      (length (grid-contents env loc))
+      nil)
+

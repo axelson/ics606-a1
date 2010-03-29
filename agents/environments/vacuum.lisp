@@ -159,6 +159,24 @@
     '(at free? (P (/ dirt-factor 10) dirt))
     returnlist))
 
+(defun generate-furniture (startloc endloc)
+  "Generates furniture information given start and end locations"
+  ;; Ensure that start location is "smaller" than end location
+  (if (> (car startloc)
+         (car endloc))
+      (format t "error!"))
+  (if (> (second startloc)
+         (second endloc))
+      (format t "error!"))
+
+  (loop for i from (car startloc) to (car endloc)
+        collecting (loop for j from (second startloc) to (second endloc)
+                         collecting (list 'at (list i j) 'furniture) into furniture-list
+                         do (format t "i: ~A j: ~A~%" i j)
+                         finally (return furniture-list))
+          into furniture-list
+        finally (return furniture-list)))
+
 (defun flatten (inlist)
   "Removes nestings from a list."
   (cond ((atom inlist) inlist)

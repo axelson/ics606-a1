@@ -139,9 +139,6 @@
   ;; Read file to set the global variables
   (read-room)
   (let ((returnlist '()))
-    (setf returnlist
-          (list '(at all (P 0.08 furniture))))
-
     ;; Cats
     (setf returnlist
           (append returnlist
@@ -158,24 +155,23 @@
                         for endloc = (second item)
                         appending (generate-furniture startloc endloc) into returnlist
                         finally (return returnlist))))
-    '(at all (P 0.08 cat))
-    '(at free? (P (/ dirt-factor 10) dirt))
+    ;;'(at all (P 0.08 cat))
+    ;;'(at free? (P (/ dirt-factor 10) dirt))
     returnlist))
 
 (defun generate-furniture (startloc endloc)
   "Generates furniture information given start and end locations"
   ;; Ensure that start location is "smaller" than end location
-  (if (> (car startloc)
-         (car endloc))
-      (format t "error!"))
-  (if (> (second startloc)
-         (second endloc))
-      (format t "error!"))
+  (if (< (car endloc)
+          (car startloc))
+      (format t "error!:one start: ~A end: ~A~%" startloc endloc))
+  (if (< (second endloc)
+          (second startloc))
+      (format t "error!:two start: ~A end: ~A~%" startloc endloc))
 
   (loop for i from (car startloc) to (car endloc)
         appending (loop for j from (second startloc) to (second endloc)
                         collecting (list 'at (list i j) 'furniture) into furniture-list
-                        do (format t "i: ~A j: ~A~%" i j)
                         finally (return furniture-list))
           into furniture-list
         finally (return furniture-list)))

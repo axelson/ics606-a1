@@ -141,15 +141,20 @@
   (let ((returnlist '()))
     (setf returnlist
           (list '(at all (P 0.08 furniture))))
-    (format t "returnlist: ~A~%" returnlist)
     (setf returnlist
           (append returnlist
                   (loop for cat in cats
                         collecting (list 'at (list (car cat) (cadr cat)) 'cat) into mycats
                         do (format t "cat:~A~%" cat)
                         finally (return mycats))))
-
-    (format t "returnlist: ~A~%" returnlist)
+    (setf returnlist
+          (append returnlist
+                  (loop for item in furniture
+                        for startloc = (list (first (car item)) (second (car item)))
+                        for endloc = (list (first (cdr item)) (second (cdr item)))
+                        collecting (list 'at (list (car item) (cadr item)) 'furniture) into mycats
+                        do (format t "furniture:~A (startloc: ~A) (endloc: ~A) ~%" item startloc endloc)
+                        finally (return mycats))))
     '(at all (P 0.08 cat))
     '(at free? (P (/ dirt-factor 10) dirt))
     returnlist))

@@ -256,5 +256,5 @@
   ;(find-object-if #'(lambda (in) (string= (object-name in) "dirt")) loc env))
   (if (find-object-if #'dirt-p loc env)
       (length (grid-contents env loc))
-      nil)
+      nil))
 

@@ -55,7 +55,9 @@
                     (setf line (read-line infile))
                     (setf shedding-factor (read-first-number line))
                     (format t "~%cat ~A: loc(~A,~A) ~A~%" num cat-x cat-y shedding-factor)
-                    (setf cats (append cats (list (list cat-x cat-y shedding-factor))))
+                    (push
+                     (list cat-x cat-y shedding-factor)
+                    cats)
                     (setf line (read-line infile))
                     ))
                 (incf section))
@@ -68,11 +70,10 @@
                     (format t "~%furniture ~A: start(~A,~A) end(~A,~A)~%"
                             num furniture-startx furniture-starty furniture-endx furniture-endy)
                     (incf num)            ;Num is just for printing number of furniture
-                    (setf furniture
-                          (append furniture (list (list (list
-                                                   furniture-startx furniture-starty)
-                                                  (list
-                                                   furniture-endx furniture-endy)))))
+                    (push
+                     (list (list furniture-startx furniture-starty)
+                           (list furniture-endx furniture-endy))
+                     furniture)
                     (format t "current furniture: ~A~%" furniture)
                     )))
                (t (format t "~%~%at end~%"))

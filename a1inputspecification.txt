@@ -8,11 +8,11 @@
 2      // Shedding factor of cat 2
 3 4    // start coord of cat 3
 1      // Shedding factor of cat 3
-// pieces of furniture, each piece is rectangular 
-2 2  // furniture #1 start x y
-2 3  // furniture #1 end x y
+
+4 2  // furniture #1 start x y
+4 3  // furniture #1 end x y
 8 2  // furniture #2 start x y
 9 3  // furniture #2 end x y
-12 15  // last piece of furniture x y
-14 14  // last piece of furniture x y
+10 9  // last piece of furniture x y
+12 13  // last piece of furniture x y
 

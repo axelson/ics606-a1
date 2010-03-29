@@ -81,27 +81,6 @@
                ))))))
 
 
-;; Only works in interpretter
-(defmacro print-var (var1)
-  `(progn
-     (format t "var: ~A" ,var1)
-     (format t "value: ~A" (eval ,var1))))
-
-;; Only works in interpretter
-(defmacro print-vars (&rest vars)
-  `(progn
-     (dolist (var ',vars)
-       (format t "~A: ~A " var (eval var)))))
-
-;  `(format t "vars: ~A" ,vars))
-
-(defun read-room-size-simple (instring)
-  (let ((first-number)
-        (position))
-    (multiple-value-setq (first-number position)
-      (parse-integer instring))
-    (format t "one: ~A two: ~A~%" first-number position)))
-
 (defun read-first-number (instring)
   (parse-integer instring :junk-allowed t))
 
@@ -121,7 +100,6 @@
        (multiple-value-setq (,first-number position)
          (parse-integer ,instring :junk-allowed t))
        (setf ,second-number (parse-integer ,instring :start position :junk-allowed t)))
-     ;(format t "first: ~A second: ~A~%" ,first-number ,second-number)
      ))
   
 

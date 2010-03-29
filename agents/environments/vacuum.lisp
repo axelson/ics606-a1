@@ -134,12 +134,13 @@
   ;; Read file to set the global variables
   (read-room)
   (let ((returnlist '()))
-    (setf returnlist (append returnlist '(at all (P 0.08 furniture))))
+    (setf returnlist
+          (list '(at all (P 0.08 furniture))))
     (format t "returnlist: ~A~%" returnlist)
     (setf returnlist
           (append returnlist
                   (loop for cat in cats
-                        collecting (list 'at (car cat) (cadr cat)) into mycats
+                        collecting (list 'at (list (car cat) (cadr cat)) 'cat) into mycats
                         do (format t "cat:~A~%" cat)
                         finally (return mycats))))
 

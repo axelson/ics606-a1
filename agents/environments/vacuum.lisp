@@ -18,23 +18,27 @@
   (defparameter furniture '())
   )
 
+(defun read-next-line (infile)
+  (loop for line = (read-line infile nil 'eof)
+        until (or (eq line 'eof)
+                  (not (string= line "")))
+        finally (return line)))
 
 (defun read-room ()
   (with-open-file (infile "a1inputspecification.txt")
     (setf cats '())
     (setf furniture '())
     (let ((num 0))
-      (format t "room-x: ~A~%" room-x)
       (loop
         with section = 1
-        for line = (read-line infile nil 'eof)
+        for line = (read-next-line infile)
         until (eq line 'eof)
         do (progn
-             (print line)
+             (format t "Line: ~A~%" line)
              (cond
                ((= section 1)           ;Room size
                 (read-both-numbers line room-x room-y)
-                (format t "room is: ~A by ~A~%" room-x room-y)
+                (format t "~%room is: ~A by ~A~%" room-x room-y)
                 (incf section))
                ((= section 2)           ;time limit
                 (setf max-time (read-first-number line))
@@ -52,20 +56,22 @@
                 (dotimes (num num-cats)
                   (let ((cat-x) (cat-y) (shedding-factor))
                     (read-both-numbers line cat-x cat-y)
-                    (setf line (read-line infile))
+                    (setf line (read-next-line infile))
                     (setf shedding-factor (read-first-number line))
                     (format t "~%cat ~A: loc(~A,~A) ~A~%" num cat-x cat-y shedding-factor)
                     (push
                      (list cat-x cat-y shedding-factor)
-                    cats)
-                    (setf line (read-line infile))
+                     cats)
+                    ;; Read next line unless done reading cats
+                    (when (not (= (1+ num) num-cats))
+                      (setf line (read-next-line infile)))
                     ))
                 (incf section))
                ((= section 6)           ;Reading in Furniture
                 (let ((furniture-startx) (furniture-starty) (furniture-endx) (furniture-endy))
                   (read-both-numbers line furniture-startx furniture-starty)
-                  (setf line (read-line infile nil))
-                  (when line
+                  (setf line (read-next-line infile))
+                  (when (not (eq line 'eof))
                     (read-both-numbers line furniture-endx furniture-endy)
                     (format t "~%furniture ~A: start(~A,~A) end(~A,~A)~%"
                             num furniture-startx furniture-starty furniture-endx furniture-endy)

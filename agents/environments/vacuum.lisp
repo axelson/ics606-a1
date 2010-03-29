@@ -155,8 +155,10 @@
                         for endloc = (second item)
                         appending (generate-furniture startloc endloc) into returnlist
                         finally (return returnlist))))
-    ;;'(at all (P 0.08 cat))
-    ;;'(at free? (P (/ dirt-factor 10) dirt))
+    ;; Dirt factor
+    (setf returnlist
+          (append returnlist
+                  (list (list 'at 'all (list 'p (/ dirt-factor 10) 'dirt)))))
     returnlist))
 
 (defun generate-furniture (startloc endloc)

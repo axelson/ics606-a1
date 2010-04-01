@@ -8,6 +8,11 @@
 
 (defstructure (cat (:include obstacle (name "C") (size 0.01))))
 
+(defun play ()
+  (read-room)
+  (run-environment (make-vacuum-world :aspec '(jason-vacuum))))
+
+
 (progn
   (defparameter room-x 0)
   (defparameter room-y 0)
@@ -134,7 +139,6 @@
 (defun generate-cspec ()
   "Generates appropriate cspec for vacuum world"
   ;; Read file to set the global variables
-  (read-room)
   (let ((returnlist '()))
     ;; Cats
     (setf returnlist

@@ -25,14 +25,14 @@
         finally (return line)))
 
 (defun read-room ()
-  (let ((infile nil))
-    (loop until infile
-          do (format t "Please enter room file: ")
-             (let ((file (read-line)))
-               (when (string= file "")
-                 (setf file "a1input.txt")
-                 (format t "Changed input~%"))))
-    ))
+  (loop with room-ok
+        do (format t "Please enter room file: ")
+             (let ((infile (read-line)))
+               (when (string= infile "")
+                 (setf infile "a1input.txt")
+                 (format t "Changed input~%"))
+               (setf room-ok (read-a-room infile)))
+        until room-ok))
 
 (defun read-a-room (file)
   ;; Get the file to read

@@ -8,6 +8,11 @@
 
 (defstructure (cat (:include obstacle (name "C") (size 0.01))))
 
+(defun play ()
+  (read-room)
+  (run-environment (make-vacuum-world :aspec '(jason-vacuum))))
+
+
 (progn
   (defparameter room-x 0)
   (defparameter room-y 0)
@@ -24,68 +29,80 @@
                   (not (string= line "")))
         finally (return line)))
 
-
 (defun read-room ()
-  (with-open-file (infile "a1inputspecification.txt")
+  (loop with room-ok
+        do (format t "Please enter room file: ")
+             (let ((infile (read-line)))
+               (when (string= infile "")
+                 (setf infile "a1input.txt")
+                 (format t "Changed input~%"))
+               (setf room-ok (read-a-room infile)))
+        until room-ok))
+
+(defun read-a-room (file)
+  ;; Get the file to read
+  (with-open-file (infile file)
     (setf cats '())
     (setf furniture '())
-    (let ((num 0))
-      (loop
-        with section = 1
-        for line = (read-next-line infile)
-        until (eq line 'eof)
-        do (progn
-             (format t "Line: ~A~%" line)
-             (cond
-               ((= section 1)           ;Room size
-                (read-both-numbers line room-x room-y)
-                (format t "~%room is: ~A by ~A~%" room-x room-y)
-                (incf section))
-               ((= section 2)           ;time limit
-                (setf max-time (read-first-number line))
-                (format t "~%max-time: ~A~%" max-time)
-                (incf section))
-               ((= section 3)           ;Dirt factor
-                (setf dirt-factor (read-first-number line))
-                (format t "~%dirt-factor: ~A~%" dirt-factor)
-                (incf section))
-               ((= section 4)           ;Num Cats
-                (setf num-cats (read-first-number line))
-                (format t "~%num-cats: ~A~%" num-cats)
-                (incf section))
-               ((= section 5)           ;Reading in Cats
-                (dotimes (num num-cats)
-                  (let ((cat-x) (cat-y) (shedding-factor))
-                    (read-both-numbers line cat-x cat-y)
-                    (setf line (read-next-line infile))
-                    (setf shedding-factor (read-first-number line))
-                    (format t "~%cat ~A: loc(~A,~A) ~A~%" num cat-x cat-y shedding-factor)
-                    (push
-                     (list cat-x cat-y shedding-factor)
-                     cats)
-                    ;; Read next line unless done reading cats
-                    (when (not (= (1+ num) num-cats))
-                      (setf line (read-next-line infile)))
-                    ))
-                (incf section))
-               ((= section 6)           ;Reading in Furniture
-                (let ((furniture-startx) (furniture-starty) (furniture-endx) (furniture-endy))
-                  (read-both-numbers line furniture-startx furniture-starty)
-                  (setf line (read-next-line infile))
-                  (when (not (eq line 'eof))
-                    (read-both-numbers line furniture-endx furniture-endy)
-                    (format t "~%furniture ~A: start(~A,~A) end(~A,~A)~%"
-                            num furniture-startx furniture-starty furniture-endx furniture-endy)
-                    (incf num)            ;Num is just for printing number of furniture
-                    (push
-                     (list (list furniture-startx furniture-starty)
-                           (list furniture-endx furniture-endy))
-                     furniture)
-                    (format t "current furniture: ~A~%" furniture)
-                    )))
-               (t (format t "~%~%at end~%"))
-               ;;(format t "~%on section: ~A" section)
-               ))))))
+    (let ((num 0)
+          (line (read-next-line infile)))
+
+      ;;Room size
+      (read-both-numbers line room-x room-y)
+      (format t "~%room is: ~A by ~A~%" room-x room-y)
+      (when (or (> room-x 20)
+                (> room-y 20))
+        (format t "Error: Room Size too Large: ~A by ~A~%" room-x room-y)
+        (return-from read-a-room nil))
+
+      ;;time limit
+      (setf line (read-next-line infile))
+      (setf max-time (read-first-number line))
+      (format t "~%max-time: ~A~%" max-time)
+      ;;Dirt factor
+      (setf line (read-next-line infile))
+      (setf dirt-factor (read-first-number line))
+      (format t "~%dirt-factor: ~A~%" dirt-factor)
+
+      ;;Num Cats
+      (setf line (read-next-line infile))
+      (setf num-cats (read-first-number line))
+      (format t "~%num-cats: ~A~%" num-cats)
+
+      ;;Reading in Cats
+      (setf line (read-next-line infile))
+      (dotimes (num num-cats)
+        (let ((cat-x) (cat-y) (shedding-factor))
+          (read-both-numbers line cat-x cat-y)
+          (setf line (read-next-line infile))
+          (setf shedding-factor (read-first-number line))
+          (format t "~%cat ~A: loc(~A,~A) ~A~%" num cat-x cat-y shedding-factor)
+          (push
+           (list cat-x cat-y shedding-factor)
+           cats)
+          ;; Read next line unless done reading cats
+          (when (not (= (1+ num) num-cats))
+            (setf line (read-next-line infile)))
+          ))
+
+      ;;Reading in Furniture
+      (setf line (read-next-line infile))
+      (loop until (eq line 'eof)
+            do (let ((furniture-startx) (furniture-starty) (furniture-endx) (furniture-endy))
+                 (read-both-numbers line furniture-startx furniture-starty)
+                 (setf line (read-next-line infile))
+                 (when (not (eq line 'eof))
+                   (read-both-numbers line furniture-endx furniture-endy)
+                   (format t "~%furniture ~A: start(~A,~A) end(~A,~A)~%"
+                           num furniture-startx furniture-starty furniture-endx furniture-endy)
+                   (incf num)            ;Num is just for printing number of furniture
+                   (push
+                    (list (list furniture-startx furniture-starty)
+                          (list furniture-endx furniture-endy))
+                    furniture)
+                   (format t "current furniture: ~A~%" furniture)
+                   )))))
+  t)
 
 
 (defun read-first-number (instring)
@@ -122,7 +139,6 @@
 (defun generate-cspec ()
   "Generates appropriate cspec for vacuum world"
   ;; Read file to set the global variables
-  (read-room)
   (let ((returnlist '()))
     ;; Cats
     (setf returnlist
@@ -193,6 +209,7 @@
 	  (if (equal loc (grid-environment-start env)) 'home)
 	  (check-sides env (agent-body agent))
           (check-dirt env (agent-body agent))
+          (check-cats env (agent-body agent))
           (check-furniture env (agent-body agent)))
 	  ))
 
@@ -240,6 +257,7 @@
 (progn
   (make-check-fn check-sides #'(lambda (in) (open-loc? in env)))
   (make-check-fn check-furniture #'(lambda (in) (furniture-loc? in env)))
+  (make-check-fn check-cats #'(lambda (in) (cat-loc? in env)))
   (make-check-fn check-dirt #'(lambda (in) (get-dirt in env))))
 
 (defun open-loc? (loc env)
@@ -248,7 +266,15 @@
 
 (defun furniture-loc? (loc env)
   "Checks if a location has furniture"
-  (find-object-if #'furniture-p loc env))
+  (if (find-object-if #'furniture-p loc env)
+      t
+      nil))
+
+(defun cat-loc? (loc env)
+  "Checks if a location has furniture"
+  (if (find-object-if #'cat-p loc env)
+      t
+      nil))
 
 
 (defun get-dirt (loc env)

@@ -209,6 +209,7 @@
 	  (if (equal loc (grid-environment-start env)) 'home)
 	  (check-sides env (agent-body agent))
           (check-dirt env (agent-body agent))
+          (check-cats env (agent-body agent))
           (check-furniture env (agent-body agent)))
 	  ))
 
@@ -256,6 +257,7 @@
 (progn
   (make-check-fn check-sides #'(lambda (in) (open-loc? in env)))
   (make-check-fn check-furniture #'(lambda (in) (furniture-loc? in env)))
+  (make-check-fn check-cats #'(lambda (in) (cat-loc? in env)))
   (make-check-fn check-dirt #'(lambda (in) (get-dirt in env))))
 
 (defun open-loc? (loc env)
@@ -264,7 +266,15 @@
 
 (defun furniture-loc? (loc env)
   "Checks if a location has furniture"
-  (find-object-if #'furniture-p loc env))
+  (if (find-object-if #'furniture-p loc env)
+      t
+      nil))
+
+(defun cat-loc? (loc env)
+  "Checks if a location has furniture"
+  (if (find-object-if #'cat-p loc env)
+      t
+      nil))
 
 
 (defun get-dirt (loc env)

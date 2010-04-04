@@ -10,7 +10,7 @@
 
 (defun play ()
   (read-room)
-  (run-environment (make-vacuum-world :aspec '(jason-vacuum))))
+  (run-environment (make-vacuum-world :aspec '(stupid-vacuum))))
 
 
 (progn
@@ -231,10 +231,7 @@
   `(defmethod ,name ((env vacuum-world) agent-body)
      (setf (object-heading agent-body)
 	   ,direction)
-     (forward env agent-body)
-     (format t "~%object max contents: ~A" (object-max-contents agent-body))
-     (format t "~%current contents: ~A" (sum (object-contents agent-body) #'object-size))
-     (check-sides env agent-body)))
+     (forward env agent-body)))
 
 (progn
   (direction-generator up '(0 1))

@@ -15,8 +15,8 @@
        #'(lambda (percept)
 	   (declare (ignore percept))
 	   (random-element
-	    ;;'(up down left right))))))
-	    '(right))))))
+	    '(shed cat-up cat-down cat-left cat-right))))))
+	    ;;'(right))))))
     "A very stupid agent: ignore percept and choose a random action.")
 
 
@@ -226,7 +226,7 @@
 	  ))
 
 (defmethod legal-actions ((env vacuum-world))
-  '(suck forward turn shut-off up down left right shed))
+  '(suck forward turn shut-off up down left right shed cat-up cat-down cat-left cat-right))
 
 ;;;; Actions (other than the basic grid actions of forward and turn)
 
@@ -255,6 +255,20 @@
   (direction-generator down '(0 -1))
   (direction-generator left '(-1 0))
   (direction-generator right '(1 0)))
+
+
+(defmacro cat-direction-generator (name direction)
+  `(defmethod ,name ((env vacuum-world) agent-body)
+     (setf (object-heading agent-body)
+	   ,direction)
+     (forward env agent-body)
+     (forward env agent-body)))
+
+(progn
+  (cat-direction-generator cat-up '(0 1))
+  (cat-direction-generator cat-down '(0 -1))
+  (cat-direction-generator cat-left '(-1 0))
+  (cat-direction-generator cat-right '(1 0)))
 
 
 ;;;; Sensor-related functions

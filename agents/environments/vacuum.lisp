@@ -226,7 +226,7 @@
 	  ))
 
 (defmethod legal-actions ((env vacuum-world))
-  '(suck forward turn shut-off up down left right))
+  '(suck forward turn shut-off up down left right shed))
 
 ;;;; Actions (other than the basic grid actions of forward and turn)
 
@@ -234,6 +234,11 @@
   (let ((dirt (find-object-if #'dirt-p (object-loc agent-body) env)))
     (when dirt
       (place-in-container dirt agent-body env))))
+
+(defmethod shed ((env vacuum-world) agent-body)
+  (format t "I'm shedding!~%")
+  (let ((dirt (make-dirt)))
+    (place-object dirt (agent-body-loc agent-body) env)))
 
 (defmethod shut-off ((env environment) agent-body)
   (declare-ignore env)

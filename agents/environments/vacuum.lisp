@@ -231,8 +231,7 @@
   `(defmethod ,name ((env vacuum-world) agent-body)
      (setf (object-heading agent-body)
 	   ,direction)
-     (forward env agent-body)
-     (check-sides env agent-body)))
+     (forward env agent-body)))
 
 (progn
   (direction-generator up '(0 1))

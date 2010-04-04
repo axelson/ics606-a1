@@ -6,7 +6,19 @@
 
 (defstructure (furniture (:include obstacle (name "F") (size 0.01))))
 
-(defstructure (cat (:include obstacle (name "C") (size 0.01))))
+(defstructure
+    (cat
+     (:include
+      agent
+      (name "C")
+      (program
+       #'(lambda (percept)
+	   (declare (ignore percept))
+	   (random-element
+	    ;;'(up down left right))))))
+	    '(right))))))
+    "A very stupid agent: ignore percept and choose a random action.")
+
 
 (defun play ()
   (read-room)

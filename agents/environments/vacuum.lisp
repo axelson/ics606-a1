@@ -226,7 +226,7 @@
 	  ))
 
 (defmethod legal-actions ((env vacuum-world))
-  '(suck forward turn shut-off up down left right shed cat-up cat-down cat-left cat-right))
+  '(suck forward turn shut-off charge up down left right shed cat-up cat-down cat-left cat-right))
 
 ;;;; Actions (other than the basic grid actions of forward and turn)
 
@@ -243,6 +243,13 @@
 (defmethod shut-off ((env environment) agent-body)
   (declare-ignore env)
   (setf (object-alive? agent-body) nil))
+
+(defmethod charge ((env environment) agent-body)
+  "Charge if in home square"
+  (if (equal (agent-body-loc agent-body) (grid-environment-start env))
+      (progn
+	(format t "Charging successfully~%"))
+      (format t "Cannot charge because not in home square~%")))
 
 (defmacro direction-generator (name direction)
   `(defmethod ,name ((env vacuum-world) agent-body)

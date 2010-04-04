@@ -232,8 +232,6 @@
      (setf (object-heading agent-body)
 	   ,direction)
      (forward env agent-body)
-     (format t "~%object max contents: ~A" (object-max-contents agent-body))
-     (format t "~%current contents: ~A" (sum (object-contents agent-body) #'object-size))
      (check-sides env agent-body)))
 
 (progn

@@ -26,8 +26,6 @@
   "Put the object in its initial position or a new position in environment."
   ;; Coerce agents into agent-bodies
   (when (agent-p object)
-    (format t "Coercing agents (~A)~%" (agent-name object))
-    (format t " agents (~A)~%" (agent-body object))
     ;; Rename cats
     (when (string= (agent-name object) "C")
       (setf (agent-body-name (agent-body object)) "C"))

@@ -10,7 +10,7 @@
 
 (defun play ()
   (read-room)
-  (run-environment (make-vacuum-world :aspec '(jason-vacuum))))
+  (run-environment (make-vacuum-world :aspec '(stupid-vacuum))))
 
 
 (progn

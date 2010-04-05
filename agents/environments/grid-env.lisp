@@ -40,7 +40,7 @@
 
 (defstruct (wall (:include obstacle)))
 
-(defstruct (agent-body (:include object (alive? t) (name nil)))
+(defstruct (agent-body (:include obstacle (alive? t) (name nil)))
   "An agent body is an object; some bodies have a hand that can hold 1 thing."
   (holding nil))
 

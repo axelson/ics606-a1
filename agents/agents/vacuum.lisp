@@ -77,6 +77,10 @@
 	     (printDamnMap map mapY mapX)
 	     (format t "~%")
 	     ;(printDamnMap floodMap mapY mapX)
+
+
+	     (if (> moveNo 40)
+		 (goHome))
 	     
 	     ;; Final action
 	     (if dirt
@@ -279,7 +283,6 @@
 			  'right))))
 
 (defun undoLastMove ()
-  (format t "LAST MOVE UNDONE!!")
   (cond
     ((eq lastMove 0) (decf currY))
     ((eq lastMove 1) (decf currX))
@@ -287,15 +290,17 @@
     ((eq lastMove 3) (incf currX)))
 )
 
-(defun planPath ()
-  
-
-  ; Final action
-  (moveTo pX pY)
+(defun goHome ()
+  (moveTo 1 1)
 )
 
-(defun moveTo (coorX coorY)
+(defun moveTo (destX destY)
+  (planPath destX destY)
+)
 
+(defun planPath (destX destY)
+  (floodDest destX destY)
+  (printDamnMap floodMap mapY mapX)
 )
 
 (defun flood ()
@@ -308,6 +313,57 @@
 		  (if (eq cell 1)
 		      (setf (aref floodMap i j) 9)
 		      (setf (aref floodMap i j) (* mapY mapX)))))))
+)
+
+(defun floodDest (destX destY)
+  ;; Initial flood values
+  (loop for i from 0 to (1- mapY) do
+       (loop for j from 0 to (1- mapX) do
+	    (if (and (eq i destY) (eq j destX))
+		(setf (aref floodMap i j) 0)
+		(setf (aref floodMap i j) (* mapY mapX)))))
+
+  ;; Continue fill
+  (setf stepCounter 1)
+  (setFillStatus)
+  (loop while (and (eq 0 fillStatus) (< stepCounter (* mapY mapX))) do
+       (loop for i from 0 to (1- mapY) do
+	    (loop for j from 0 to (1- mapX) do
+		 (if (eq (aref floodMap i j) (1- stepCounter))
+		     (assign i j)
+		     (incf stepCounter)
+		     (setFillStatus)))))
+)
+
+(defun assign (coorX coorY)
+  ;; North
+  (let ((x coorX) (y (1+ coorY)))
+    (if (and (> (aref floodMap y x) stepCount) (> (aref map y x) 0))
+	(setf (aref floodMap y x) stepCount))
+  ;; East
+    (setf x (1+ coorX))
+    (setf y coorY)
+    (if (and (> (aref floodMap y x) stepCount) (> (aref map y x) 0))
+	(setf (aref floodMap y x) stepCount))
+  ;; South
+    (setf x coorX)
+    (setf y (1- coorY))
+    (if (and (> (aref floodMap y x) stepCount) (> (aref map y x) 0))
+	(setf (aref floodMap y x) stepCount))
+  ;; West
+    (setf x (1- coorX))
+    (setf y coorY)
+    (if (and (> (aref floodMap y x) stepCount) (> (aref map y x) 0))
+	(setf (aref floodMap y x) stepCount))
+    )
+)
+
+(defun setFillStatus ()
+  (setf fillStatus 1)
+  (loop for i from 0 to (1- mapY) do
+       (loop for j from 0 to (1- mapX) do
+	    (if (and (> 0 (aref map i j)) (eq (aref floodMap i j) (* mapY mapX)))
+		(setf fillStatus 0))))
 )
 
 (defun printDamnMap (map height width)

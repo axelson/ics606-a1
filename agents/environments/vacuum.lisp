@@ -17,7 +17,7 @@
 	   (random-element
 	    '(shed cat-up cat-down cat-left cat-right cat-sleep cat-sleep cat-sleep cat-sleep cat-sleep cat-sleep cat-sleep cat-sleep))))))
 	    ;;'(right))))))
-    "A very stupid agent: ignore percept and choose a random action.")
+    "A cat. Sleeps, moves, and sheds.")
 
 
 (defun play ()
@@ -214,7 +214,7 @@
        1000)))
 
 (defmethod get-percept ((env vacuum-world) agent)
-  "Percept is a three-element sequence: bump, dirt and home."
+  "Percept is everything the agent knows about the world."
   (let ((loc (object-loc (agent-body agent))))
     (list (if (object-bump (agent-body agent)) 'bump)
 	  (if (find-object-if #'dirt-p loc env) 'dirt)

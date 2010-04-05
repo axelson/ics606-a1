@@ -46,7 +46,7 @@
         do (format t "Please enter room file: ")
              (let ((infile (read-line)))
                (when (string= infile "")
-                 (setf infile "a1input.txt")
+                 (setf infile "default.txt")
                  (format t "Changed input~%"))
                (setf room-ok (read-a-room infile)))
         until room-ok))

@@ -27,6 +27,7 @@
   (bump nil)			; Has the object bumped into something?
   (size 0.5)			; Size of object as proportion of loc
   (color 'black)		; Some objects have a color
+  (charge 100)			; Some object have a charge
   (shape 'rectangle)		; Some objects have a shape
   (sound nil)			; Some objects create a sound
   (contents '())		; Some objects contain others
@@ -39,9 +40,13 @@
 
 (defstruct (wall (:include obstacle)))
 
-(defstruct (agent-body (:include object (alive? t) (name nil)))
+(defstruct (agent-body (:include obstacle (alive? t) (name nil)))
   "An agent body is an object; some bodies have a hand that can hold 1 thing."
   (holding nil))
+
+;; (defstruct (cat-body (:include obstacle (alive? t) (name "C")))
+;;   "A cat body is an object; some bodies have a hand that can hold 1 thing."
+;;   (holding nil))
 
 ;;;; Generic Functions
 

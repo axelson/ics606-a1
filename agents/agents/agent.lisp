@@ -12,18 +12,24 @@
 
 (defmethod print-structure ((agent agent) stream)
   "Agents are printed by showing their name (or body) and score."
+  (format t "print-structure: agent-name: ~A~%" (agent-name agent))
   (format stream "[~A = ~D]" (or (agent-name agent) (agent-body agent))
 	  (agent-score agent)))
 
 (defun initialize-agent-names (env)
   "Name the agents 1, 2, ... if they don't yet have a name."
+  (format t "initializing agent names!~%")
   (for each agent in (environment-agents env) do
+      (format t "agent: ~A~%" (agent-name agent))
        (when (null (agent-name agent))
 	 (let ((i (+ 1 (position agent (environment-agents env))))
 	       (body (agent-body agent)))
 	   (setf (agent-name agent) i)
 	   (when (and body (null (object-name body)))
-	     (setf (object-name body) i))))))
+	     (setf (object-name body) i)))))
+  (for each agent in (environment-agents env) do
+      (format t "agent: ~A~%" (agent-name agent))
+    ))
 
 ;; Design Decision Notes
 

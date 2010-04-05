@@ -15,6 +15,9 @@
   "Move an object to an absolute location and return that location.  However,
   attempting to move into a location with an obstacle fails (returns nil)
   and the object receives a bump."
+  (format t "move-object-to: object: ~A~%" (object-name object))
+  (when (agent-p object)
+    (format t "move-object-to: moving ~A~%" (agent-name object)))
   (cond ((find-object-if #'obstacle-p loc env)
 	 (setf (object-bump object) 'bump)
 	 nil)

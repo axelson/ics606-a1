@@ -31,14 +31,16 @@
       agent
       (program
        #'(lambda (percept)
-	   (destructuring-bind (bump dirt home directionsList dirtList furnitureList catList) percept
+	   (destructuring-bind (bump dirt home directionsList dirtList catList furnitureList) percept
 	     (read-line)
 	     ;; If there was a bump, undo last move (if applicable)
 	     (if bump
-		 (undoLastMove))
+		   (undoLastMove))
 
 	     (updateMap percept)
 	     (updateHeading)
+	     (if (not (eq choiceDir -1))
+		 (updateVisited))
 
 	     (format t "~%currX: ~A" currX)
 	     (format t "~%currY: ~A" currY)
@@ -52,40 +54,53 @@
 	     (format t "~%")
 	     (format t "~%Output:~%")
 
+	     ;; Maps
+	     (printDamnMap visited mapY mapX)
+	     (format t "~%")
 	     (printDamnMap map mapY mapX)
 	     (format t "~%")
-	     (printDamnMap floodMap mapY mapX)
-
+	     ;(printDamnMap floodMap mapY mapX)
+	     
 	     ;; Final action
 	     (if dirt
-		 (updateAction 'suck)
+		 (progn
+		   (setf choiceDir -1)
+		   (updateAction 'suck))
 		 (cond
 		   ((> plan 0) ())
 		   
 		   (T (progn
-			(setf amount 1)
+			(setf amount 0)
 			(setf choiceDir -1)
 			;; North
 			(setf amountT (aref map (1+ currY) currX))
+			(setf visitNoT (aref visited (1+ currY) currX))
 			(if (> amountT amount)
 			    (progn
 			      (setf amount amountT)
+			      (setf visitNo visitNoT)
 			      (setf choiceDir 0)))
+
 			;; East
 			(setf amountT (aref map currY (1+ currX)))
-			(if (> amountT amount)
+			(setf visitNoT (aref visited currY (1+ currX)))
+			(if (or (> amountT amount) (and (eq amount amountT) (< visitNoT visitNo)))
 			    (progn
 			      (setf amount amountT)
 			      (setf choiceDir 1)))
+				
 			;; South
 			(setf amountT (aref map (1- currY) currX))
-			(if (> amountT amount)
+			(setf visitNoT (aref visited (1- currY) currX))
+			(if (or (> amountT amount) (and (eq amount amountT) (< visitNoT visitNo)))
 			    (progn
 			      (setf amount amountT)
 			      (setf choiceDir 2)))
+
 			;; West
-			(setf amountT (aref map currY (1+ currX)))
-			(if (> amountT amount)
+			(setf amountT (aref map currY (1- currX)))
+			(setf visitNoT (aref visited currY (1- currX)))
+			(if (or (> amountT amount) (and (eq amount amountT) (< visitNoT visitNo)))
 			    (progn
 			      (setf amount amountT)
 			      (setf choiceDir 3)))
@@ -97,13 +112,14 @@
 			  ((eq 3 choiceDir) (updateAction 'left))
 			  (T (progn
 			       (flood)
-			       (updateAction 'right))))
+			       (updateAction 'shut-off))))
 			)))))))))
-"A very stupid agent")
+    "A very stupid agent")
 
 (defun chris-play ()
   "Reset vacuum variables and launches vacuum"
   (progn
+    (defparameter moveNo 1)
     (defparameter mapX 12)
     (defparameter mapY 8)
     (defparameter currX 1)
@@ -114,6 +130,7 @@
     (defparameter plan 0)
     (defparameter lastMove -1)
     (defparameter map (make-array (list mapY mapX) :initial-element 0))
+    (defparameter visited (make-array (list mapY mapX) :initial-element 0))
     (defparameter floodMap (make-array (list mapY mapX)))
     (format t "All variables have been reset")
     ; Create walls
@@ -133,10 +150,15 @@
   "Update heading"
   (setf heading (mod heading 4)))
 
+(defun updateVisited ()
+  (setf (aref visited currY currX) moveNo)
+  (incf moveNo)
+)
+
 (defun updateMap (percept)
   "Updates map accordingly"
   (progn
-     (destructuring-bind (bump dirt home directionsList dirtList furnitureList catList) percept
+     (destructuring-bind (bump dirt home directionsList dirtList catList furnitureList) percept
        ;; North
        (setf tempDirect (car directionsList))
        (setf tempDirt (car dirtList))
@@ -196,11 +218,10 @@
 
 (defun updateAction (action)
   "Performs various updates per action taken"
-  ; Legal actions:
   ; suck forward turn (L,R) shut-off up down left right
   (cond
     ((eq action 'suck) (progn
-			 (if (> 0 (aref map currY currX))
+			 (if (> (aref map currY currX) 1)
 			     (decf (aref map currY currX))) 
 			 'suck))
     ((eq action 'forward) (progn

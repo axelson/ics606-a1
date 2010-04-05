@@ -251,8 +251,10 @@
   "Charge if in home square"
   (if (equal (agent-body-loc agent-body) (grid-environment-start env))
       (progn
-	(format t "Charging successfully~%"))
-      (format t "Cannot charge because not in home square~%")))
+	(format t "Charging from ~A" (agent-body-charge agent-body))
+        (setf (agent-body-charge agent-body) 100)
+	(format t " to ~A~%" (agent-body-charge agent-body)))
+      (format t "Cannot if not in home square~%")))
 
 (defmacro direction-generator (name direction)
   `(defmethod ,name ((env vacuum-world) agent-body)

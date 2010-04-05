@@ -246,12 +246,11 @@
       (place-in-container dirt agent-body env))))
 
 (defmethod shed ((env vacuum-world) agent-body)
-  (format t "I'm shedding!~%")
   (let ((dirt (make-dirt)))
     (place-object dirt (agent-body-loc agent-body) env)))
 
 (defmethod cat-sleep ((env vacuum-world) agent-body)
-  (format t "Cat sleeping~%"))
+  )
 
 (defmethod shut-off ((env environment) agent-body)
   (declare-ignore env)

@@ -15,7 +15,7 @@
        #'(lambda (percept)
 	   (declare (ignore percept))
 	   (random-element
-	    '(shed cat-up cat-down cat-left cat-right))))))
+	    '(shed cat-up cat-down cat-left cat-right cat-sleep cat-sleep cat-sleep cat-sleep cat-sleep cat-sleep cat-sleep cat-sleep))))))
 	    ;;'(right))))))
     "A very stupid agent: ignore percept and choose a random action.")
 
@@ -226,7 +226,7 @@
 	  ))
 
 (defmethod legal-actions ((env vacuum-world))
-  '(suck forward turn shut-off charge up down left right shed cat-up cat-down cat-left cat-right))
+  '(suck forward turn shut-off charge up down left right cat-sleep shed cat-up cat-down cat-left cat-right))
 
 ;;;; Actions (other than the basic grid actions of forward and turn)
 
@@ -239,6 +239,9 @@
   (format t "I'm shedding!~%")
   (let ((dirt (make-dirt)))
     (place-object dirt (agent-body-loc agent-body) env)))
+
+(defmethod cat-sleep ((env vacuum-world) agent-body)
+  (format t "Cat sleeping~%"))
 
 (defmethod shut-off ((env environment) agent-body)
   (declare-ignore env)

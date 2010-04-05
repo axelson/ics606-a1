@@ -44,6 +44,10 @@
   "An agent body is an object; some bodies have a hand that can hold 1 thing."
   (holding nil))
 
+;; (defstruct (cat-body (:include obstacle (alive? t) (name "C")))
+;;   "A cat body is an object; some bodies have a hand that can hold 1 thing."
+;;   (holding nil))
+
 ;;;; Generic Functions
 
 (defmethod update-fn ((env grid-environment))

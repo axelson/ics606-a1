@@ -8,6 +8,8 @@
 
 (defparameter *aima-root* (truename "/ICS606")
 ;(defparameter *aima-root* (truename "/home/jason/unison-root/data/programming/ics606")
+;;(defparameter *aima-root* "~/ics606/"
+;;(defparameter *aima-root* (truename "/home/jason/unison-root/data/programming/vacuum")
 ;(defparameter *aima-root* (truename "/Users/jason/unison-root/data/programming/ics606")
 
   "The root directory where the code is stored.")
@@ -217,3 +219,4 @@
 ;;;; Always load the utilities
 
 (aima-load 'utilities)
+;(load "agents/environments/vacuum.lisp")

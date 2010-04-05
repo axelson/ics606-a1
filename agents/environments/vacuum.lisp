@@ -24,6 +24,10 @@
   (read-room)
   (run-environment (make-vacuum-world :aspec '(stupid-vacuum))))
 
+(defmethod termination? ((env vacuum-world))
+  "Stop when any agent dies"
+  (some #'(lambda (agent) (not (object-alive? (agent-body agent))))
+	 (environment-agents env)))
 
 (progn
   (defparameter room-x 0)

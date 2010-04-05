@@ -27,6 +27,7 @@
   (bump nil)			; Has the object bumped into something?
   (size 0.5)			; Size of object as proportion of loc
   (color 'black)		; Some objects have a color
+  (charge 100)			; Some object have a charge
   (shape 'rectangle)		; Some objects have a shape
   (sound nil)			; Some objects create a sound
   (contents '())		; Some objects contain others

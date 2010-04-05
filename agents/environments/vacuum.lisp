@@ -222,7 +222,8 @@
 	  (check-sides env (agent-body agent))
           (check-dirt env (agent-body agent))
           (check-cats env (agent-body agent))
-          (check-furniture env (agent-body agent)))
+          (check-furniture env (agent-body agent))
+          (agent-body-charge (agent-body agent)))
 	  ))
 
 (defmethod legal-actions ((env vacuum-world))

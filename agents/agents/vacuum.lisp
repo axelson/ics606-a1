@@ -6,7 +6,7 @@
    (:include agent
     (program
      #'(lambda (percept)
-         (destructuring-bind (bump dirt home directions dirlist furnitureList catList) percept
+         (destructuring-bind (bump dirt home directions dirlist furnitureList catList charge) percept
            (read-line)
            (format t "~%Output: ")
 	   (cond (dirt 'suck)

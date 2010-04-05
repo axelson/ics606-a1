@@ -21,7 +21,8 @@
 
 
 (defun play ()
-  (read-room)
+  (when (not (read-room))
+    (return-from play))
   (run-environment (make-vacuum-world :aspec '(stupid-vacuum))))
 
 (defmethod termination? ((env vacuum-world))
@@ -48,16 +49,26 @@
 (defun read-room ()
   (loop with room-ok
         do (format t "Please enter room file: ")
-             (let ((infile (read-line)))
-               (when (string= infile "")
-                 (setf infile "default.txt")
-                 (format t "Changed input~%"))
-               (setf room-ok (read-a-room infile)))
-        until room-ok))
+           (let ((filename (read-line)))
+             (when (string= filename "")
+               (setf filename "default.txt")
+               (format t "Using default file (default.txt)~%"))
+             ;; If filename is exit, quit
+             (when (string= filename "exit")
+               (return-from read-room nil))
+             ;; Check if file exists
+             (with-open-file (file filename :if-does-not-exist nil)
+               (if (null file)
+                   (progn
+                     (setf room-ok nil)
+                     (format t "Sorry, file ~A does not exist, please choose another or type exit to exit~%" filename))
+                   (setf room-ok (read-a-room filename)))))
+        until room-ok)
+  t)
 
-(defun read-a-room (file)
+(defun read-a-room (filename)
   ;; Get the file to read
-  (with-open-file (infile file)
+  (with-open-file (infile filename)
     (setf cats '())
     (setf furniture '())
     (let ((num 0)

@@ -230,7 +230,16 @@
 
 ;;;; Actions (other than the basic grid actions of forward and turn)
 
+(defmethod expend-energy ((env vacuum-world) agent-body &optional (energy 0.25))
+  (format t "expend-energy: expending ~A energy leaving " energy)
+  (setf (agent-body-charge agent-body) (- (agent-body-charge agent-body)
+                                          energy))
+  (format t "~A~%" (agent-body-charge agent-body))
+  )
+
+
 (defmethod suck ((env vacuum-world) agent-body)
+  (expend-energy env agent-body)
   (let ((dirt (find-object-if #'dirt-p (object-loc agent-body) env)))
     (when dirt
       (place-in-container dirt agent-body env))))
@@ -258,6 +267,7 @@
 
 (defmacro direction-generator (name direction)
   `(defmethod ,name ((env vacuum-world) agent-body)
+     (expend-energy env agent-body)
      (setf (object-heading agent-body)
 	   ,direction)
      (forward env agent-body)))

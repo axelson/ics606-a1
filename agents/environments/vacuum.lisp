@@ -241,8 +241,10 @@
   (setf (agent-body-charge agent-body) (- (agent-body-charge agent-body)
                                           energy))
   (format t "~A~%" (agent-body-charge agent-body))
-  )
-
+  ;; If out of energy, shut-off agent
+  (when (<= (agent-body-charge agent-body) 0)
+    (format t "Out of energy, shutting off~%")
+    (shut-off env agent-body)))
 
 (defmethod suck ((env vacuum-world) agent-body)
   (expend-energy env agent-body)

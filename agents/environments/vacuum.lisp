@@ -231,6 +231,8 @@
 ;;;; Actions (other than the basic grid actions of forward and turn)
 
 (defmethod suck ((env vacuum-world) agent-body)
+  (format t "~%object max contents: ~A" (object-max-contents agent-body))
+  (format t "~%current contents: ~A" (sum (object-contents agent-body) #'object-size))
   (let ((dirt (find-object-if #'dirt-p (object-loc agent-body) env)))
     (when dirt
       (place-in-container dirt agent-body env))))

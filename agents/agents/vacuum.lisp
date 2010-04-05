@@ -2,6 +2,23 @@
 
 ;;;; Some simple agents for the vacuum world
 
+(defstructure (stupid-vacuum
+   (:include agent
+    (program
+     #'(lambda (percept)
+         (destructuring-bind (bump dirt home directions dirlist furnitureList catList) percept
+           (read-line)
+           (format t "~%Output: ")
+	   (cond (dirt 'suck)
+		 (bump
+		  (format t "Bump!!~%")
+		  '(turn right))
+		 (home 'forward)
+                 (t 'up)))))))
+		 ;;(t (random-element '(forward forward forward shut-off
+		;;			      (turn right) (turn left))))))))))
+  "A very stupid agent: ignore percept and choose a random action.")
+
 (defstructure (random-vacuum-agent 
    (:include agent
     (program 

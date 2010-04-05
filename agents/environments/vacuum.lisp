@@ -6,11 +6,23 @@
 
 (defstructure (furniture (:include obstacle (name "F") (size 0.01))))
 
-(defstructure (cat (:include obstacle (name "C") (size 0.01))))
+(defstructure
+    (cat
+     (:include
+      agent
+      (name "C")
+      (program
+       #'(lambda (percept)
+	   (declare (ignore percept))
+	   (random-element
+	    '(shed cat-up cat-down cat-left cat-right))))))
+	    ;;'(right))))))
+    "A very stupid agent: ignore percept and choose a random action.")
+
 
 (defun play ()
   (read-room)
-  (run-environment (make-vacuum-world :aspec '(jason-vacuum))))
+  (run-environment (make-vacuum-world :aspec '(stupid-vacuum))))
 
 
 (progn
@@ -214,7 +226,7 @@
 	  ))
 
 (defmethod legal-actions ((env vacuum-world))
-  '(suck forward turn shut-off up down left right))
+  '(suck forward turn shut-off up down left right shed cat-up cat-down cat-left cat-right))
 
 ;;;; Actions (other than the basic grid actions of forward and turn)
 
@@ -222,6 +234,11 @@
   (let ((dirt (find-object-if #'dirt-p (object-loc agent-body) env)))
     (when dirt
       (place-in-container dirt agent-body env))))
+
+(defmethod shed ((env vacuum-world) agent-body)
+  (format t "I'm shedding!~%")
+  (let ((dirt (make-dirt)))
+    (place-object dirt (agent-body-loc agent-body) env)))
 
 (defmethod shut-off ((env environment) agent-body)
   (declare-ignore env)
@@ -231,16 +248,27 @@
   `(defmethod ,name ((env vacuum-world) agent-body)
      (setf (object-heading agent-body)
 	   ,direction)
-     (forward env agent-body)
-     (format t "~%object max contents: ~A" (object-max-contents agent-body))
-     (format t "~%current contents: ~A" (sum (object-contents agent-body) #'object-size))
-     (check-sides env agent-body)))
+     (forward env agent-body)))
 
 (progn
   (direction-generator up '(0 1))
   (direction-generator down '(0 -1))
   (direction-generator left '(-1 0))
   (direction-generator right '(1 0)))
+
+
+(defmacro cat-direction-generator (name direction)
+  `(defmethod ,name ((env vacuum-world) agent-body)
+     (setf (object-heading agent-body)
+	   ,direction)
+     (forward env agent-body)
+     (forward env agent-body)))
+
+(progn
+  (cat-direction-generator cat-up '(0 1))
+  (cat-direction-generator cat-down '(0 -1))
+  (cat-direction-generator cat-left '(-1 0))
+  (cat-direction-generator cat-right '(1 0)))
 
 
 ;;;; Sensor-related functions

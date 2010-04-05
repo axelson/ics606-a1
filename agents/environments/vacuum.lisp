@@ -64,6 +64,7 @@
                      (format t "Sorry, file ~A does not exist, please choose another or type exit to exit~%" filename))
                    (setf room-ok (read-a-room filename)))))
         until room-ok)
+  ;; Return true indicating success
   t)
 
 (defun read-a-room (filename)

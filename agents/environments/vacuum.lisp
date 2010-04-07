@@ -17,13 +17,18 @@
 	   (random-element
 	    '(shed cat-up cat-down cat-left cat-right cat-sleep cat-sleep cat-sleep cat-sleep cat-sleep cat-sleep cat-sleep cat-sleep))))))
 	    ;;'(right))))))
-    "A very stupid agent: ignore percept and choose a random action.")
+    "A cat. Sleeps, moves, and sheds.")
 
 
 (defun play ()
-  (read-room)
+  (when (not (read-room))
+    (return-from play))
   (run-environment (make-vacuum-world :aspec '(stupid-vacuum))))
 
+(defmethod termination? ((env vacuum-world))
+  "Stop when any agent dies"
+  (some #'(lambda (agent) (not (object-alive? (agent-body agent))))
+	 (environment-agents env)))
 
 (progn
   (defparameter room-x 0)
@@ -44,16 +49,27 @@
 (defun read-room ()
   (loop with room-ok
         do (format t "Please enter room file: ")
-             (let ((infile (read-line)))
-               (when (string= infile "")
-                 (setf infile "a1input.txt")
-                 (format t "Changed input~%"))
-               (setf room-ok (read-a-room infile)))
-        until room-ok))
+           (let ((filename (read-line)))
+             (when (string= filename "")
+               (setf filename "default.txt")
+               (format t "Using default file (default.txt)~%"))
+             ;; If filename is exit, quit
+             (when (string= filename "exit")
+               (return-from read-room nil))
+             ;; Check if file exists
+             (with-open-file (file filename :if-does-not-exist nil)
+               (if (null file)
+                   (progn
+                     (setf room-ok nil)
+                     (format t "Sorry, file ~A does not exist, please choose another or type exit to exit~%" filename))
+                   (setf room-ok (read-a-room filename)))))
+        until room-ok)
+  ;; Return true indicating success
+  t)
 
-(defun read-a-room (file)
+(defun read-a-room (filename)
   ;; Get the file to read
-  (with-open-file (infile file)
+  (with-open-file (infile filename)
     (setf cats '())
     (setf furniture '())
     (let ((num 0)
@@ -214,36 +230,48 @@
        1000)))
 
 (defmethod get-percept ((env vacuum-world) agent)
-  "Percept is a three-element sequence: bump, dirt and home."
-  (let ((loc (object-loc (agent-body agent))))
-    (list (if (object-bump (agent-body agent)) 'bump)
+  "Percept is everything the agent knows about the world."
+  (let* ((agent-body (agent-body agent))
+         (loc (object-loc agent-body)))
+    (list (if (object-bump agent-body) 'bump)
 	  (if (find-object-if #'dirt-p loc env) 'dirt)
 	  (if (equal loc (grid-environment-start env)) 'home)
-	  (check-sides env (agent-body agent))
-          (check-dirt env (agent-body agent))
-          (check-cats env (agent-body agent))
-          (check-furniture env (agent-body agent)))
-	  ))
+	  (check-sides env agent-body)
+          (check-dirt env agent-body)
+          (check-cats env agent-body)
+          (check-furniture env agent-body)
+          (agent-body-charge agent-body))
+    ))
 
 (defmethod legal-actions ((env vacuum-world))
   '(suck forward turn shut-off charge up down left right cat-sleep shed cat-up cat-down cat-left cat-right))
 
 ;;;; Actions (other than the basic grid actions of forward and turn)
 
+(defmethod expend-energy ((env vacuum-world) agent-body &optional (energy 0.25))
+  (format t "expend-energy: expending ~A energy leaving " energy)
+  (setf (agent-body-charge agent-body) (- (agent-body-charge agent-body)
+                                          energy))
+  (format t "~A~%" (agent-body-charge agent-body))
+  ;; If out of energy, shut-off agent
+  (when (<= (agent-body-charge agent-body) 0)
+    (format t "Out of energy, shutting off~%")
+    (shut-off env agent-body)))
+
 (defmethod suck ((env vacuum-world) agent-body)
   (format t "~%object max contents: ~A" (object-max-contents agent-body))
   (format t "~%current contents: ~A" (sum (object-contents agent-body) #'object-size))
+  (expend-energy env agent-body)
   (let ((dirt (find-object-if #'dirt-p (object-loc agent-body) env)))
     (when dirt
       (place-in-container dirt agent-body env))))
 
 (defmethod shed ((env vacuum-world) agent-body)
-  (format t "I'm shedding!~%")
   (let ((dirt (make-dirt)))
     (place-object dirt (agent-body-loc agent-body) env)))
 
 (defmethod cat-sleep ((env vacuum-world) agent-body)
-  (format t "Cat sleeping~%"))
+  )
 
 (defmethod shut-off ((env environment) agent-body)
   (declare-ignore env)
@@ -253,11 +281,14 @@
   "Charge if in home square"
   (if (equal (agent-body-loc agent-body) (grid-environment-start env))
       (progn
-	(format t "Charging successfully~%"))
-      (format t "Cannot charge because not in home square~%")))
+	(format t "Charging from ~A" (agent-body-charge agent-body))
+        (setf (agent-body-charge agent-body) 100)
+	(format t " to ~A~%" (agent-body-charge agent-body)))
+      (format t "Cannot if not in home square~%")))
 
 (defmacro direction-generator (name direction)
   `(defmethod ,name ((env vacuum-world) agent-body)
+     (expend-energy env agent-body)
      (setf (object-heading agent-body)
 	   ,direction)
      (forward env agent-body)))

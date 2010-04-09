@@ -21,6 +21,8 @@
   (defparameter *map* (make-array (list *mapY* *mapX*) :initial-element 0))
   (defparameter *visited* (make-array (list *mapY* *mapX*) :initial-element 0)
     "Map showing when each cell was last visited")
+  (defparameter *patrolMap* (make-array (list *mapY* *mapX*) :initial-element 0)
+    "Map showing when each cell was last visited while patrolling")
   (defparameter *floodMap* (make-array (list *mapY* *mapX*))))
 
 (defun chris-play ()
@@ -44,6 +46,7 @@
   (setf *lastMove* -1)
   (setf *map* (make-array (list *mapY* *mapX*) :initial-element 0))
   (setf *visited* (make-array (list *mapY* *mapX*) :initial-element 0))
+  (setf *patrolMap* (make-array (list *mapY* *mapX*) :initial-element 0))
   (setf *floodMap* (make-array (list *mapY* *mapX*)))
   (format t "All variables have been reset")
                                         ; Create walls

@@ -531,11 +531,11 @@
 (defun findCandidates ()
   (let ((count 0))
     (loop for i from 1 to (1- *mapY*) do
-	 (loop for j from 1 to (1- *mapX* ) do
-	      (if (and (or (eq (aref *map* i j) 0) (> (aref *map* i j) 1)) (anyAdjVisited j i))
-		  (progn
-		    (setf (aref *floodMap* i j) 0)
-		    (incf count)))))
+      (loop for j from 1 to (1- *mapX* ) do
+        (if (and (or (eq (aref *map* i j) 0) (> (aref *map* i j) 1)) (anyAdjVisited j i))
+            (progn
+              (setf (aref *floodMap* i j) 0)
+              (incf count)))))
     (format t "CANDIDATE COUNT: ~A~%" count)
     (if (eq 0 count)
 	(progn
@@ -573,33 +573,33 @@
     (if (> fValue 0)
 	(progn
 	  (loop while (> fValue 0) do
-	       (progn
-		 ;; North
-		 (if (< (aref *floodMap* (1+ y) x) fValue)
-		     (progn
-		       (setf fValue (aref *floodMap* (1+ y) x))
-		       (setf dir 0)))
-		 ;; East
-		 (if (< (aref *floodMap* y (1+ x)) fValue)
-		     (progn
-		       (setf fValue (aref *floodMap* y (1+ x)))
-		       (setf dir 1)))
-		 ;; South
-		 (if (< (aref *floodMap* (1- y) x) fValue)
-		     (progn
-		       (setf fValue (aref *floodMap* (1- y) x))
-		       (setf dir 2)))
-		 ;; West
-		 (if (< (aref *floodMap* y (1- x)) fValue)
-		     (progn
-		       (setf fValue (aref *floodMap* y (1- x)))
-		       (setf dir 3)))
-		 (cond
-		   ((eq 0 dir) (incf y))
-		   ((eq 1 dir) (incf x))
-		   ((eq 2 dir) (decf y))
-		   ((eq 3 dir) (decf x))
-		   (T (format t "SHOULD NOT HAPPEN")))))
+            (progn
+              ;; North
+              (if (< (aref *floodMap* (1+ y) x) fValue)
+                  (progn
+                    (setf fValue (aref *floodMap* (1+ y) x))
+                    (setf dir 0)))
+              ;; East
+              (if (< (aref *floodMap* y (1+ x)) fValue)
+                  (progn
+                    (setf fValue (aref *floodMap* y (1+ x)))
+                    (setf dir 1)))
+              ;; South
+              (if (< (aref *floodMap* (1- y) x) fValue)
+                  (progn
+                    (setf fValue (aref *floodMap* (1- y) x))
+                    (setf dir 2)))
+              ;; West
+              (if (< (aref *floodMap* y (1- x)) fValue)
+                  (progn
+                    (setf fValue (aref *floodMap* y (1- x)))
+                    (setf dir 3)))
+              (cond
+                ((eq 0 dir) (incf y))
+                ((eq 1 dir) (incf x))
+                ((eq 2 dir) (decf y))
+                ((eq 3 dir) (decf x))
+                (T (format t "SHOULD NOT HAPPEN")))))
 	  (format t "MOVE TO: ~A ~A~%" x y)
 	  (moveTo x y))
 	(progn

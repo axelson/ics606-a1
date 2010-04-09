@@ -1,4 +1,4 @@
-;;; -*- Mode: Lisp; Syntax: Common-Lisp; -*- Author: Peter Norvig
+;;; -*- Mode: Lisp; Syntax: Common-Lisp; -*- Author: Jason Axelson and Chris Ho
 
 (progn
   (defparameter *explored* NIL "true if entire map has been explored")

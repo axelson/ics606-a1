@@ -1,5 +1,71 @@
 ;;; -*- Mode: Lisp; Syntax: Common-Lisp; -*- Author: Peter Norvig
 
+(progn
+  (defparameter *explored* NIL)
+  (defparameter *mapExplored* NIL)
+  (defparameter *suckNo* 0)
+  (defparameter *moveNo* 1)
+  (defparameter *visitNo* 1)
+  (defparameter *stepCounter* 0)
+  ;; TODO read *mapX* and *mapY* from the *map* file
+  (defparameter *mapX* 12)
+  (defparameter *mapY* 8)
+  (defparameter *currX* 1)
+  (defparameter *currY* 1)
+  (defparameter *heading* 1)
+  (defparameter *choiceDir* 0)
+  (defparameter *amount* 0)
+  (defparameter *plan* 0)
+  (defparameter *planX* 0)
+  (defparameter *planY* 0)
+  (defparameter *goHome* 0)
+  (defparameter *lastMove* -1)
+  (defparameter *map* (make-array (list *mapY* *mapX*) :initial-element 0))
+  (defparameter *visited* (make-array (list *mapY* *mapX*) :initial-element 0))
+  (defparameter *floodMap* (make-array (list *mapY* *mapX*))))
+
+(defun chris-play ()
+  "Reset vacuum variables and launches vacuum"
+  (setf *explored* NIL)
+  (setf *suckNo* 0)
+  (setf *moveNo* 1)
+  (setf *visitNo* 1)
+  (setf *stepCounter* 0)
+  ;; TODO read *mapX* and *mapY* from the *map* file
+  (setf *mapX* 12)
+  (setf *mapY* 8)
+  (setf *currX* 1)
+  (setf *currY* 1)
+  (setf *heading* 1)
+  (setf *choiceDir* 0)
+  (setf *amount* 0)
+  (setf *plan* 0)
+  (setf *planX* 0)
+  (setf *planY* 0)
+  (setf *goHome* 0)
+  (setf *lastMove* -1)
+  (setf *mapExplored* NIL)
+  (setf *map* (make-array (list *mapY* *mapX*) :initial-element 0))
+  (setf *visited* (make-array (list *mapY* *mapX*) :initial-element 0))
+  (setf *floodMap* (make-array (list *mapY* *mapX*)))
+  (format t "All variables have been reset")
+                                        ; Create walls
+  (loop for i from 0 to (1- *mapY*) do
+    (progn
+      (setf (aref *map* i 0) -1)
+      (setf (aref *visited* i 0) -1)
+      (setf (aref *map* i (1- *mapX*)) -1)
+      (setf (aref *visited* i (1- *mapX*)) -1)))
+  (loop for i from 0 to (1- *mapX*) do
+    (progn
+      (setf (aref *map* 0 i) -1)
+      (setf (aref *visited* 0 i) -1)
+      (setf (aref *map* (1- *mapY*) i) -1)
+      (setf (aref *visited* (1- *mapY*) i) -1)))
+
+  (read-a-room "default.txt")
+  (run-environment (make-vacuum-world :aspec '(jason-vacuum))))
+
 ;;;; Some simple agents for the vacuum world
 
 (defstructure (stupid-vacuum
@@ -181,49 +247,6 @@
 				   (updateAction 'shut-off)))))
 			    )))))))))
      "A very stupid agent")
-
-(defun chris-play ()
-  "Reset vacuum variables and launches vacuum"
-  (progn
-    (defparameter *explored* NIL)
-    (defparameter *suckNo* 0)
-    (defparameter *moveNo* 1)
-    (defparameter *visitNo* 1)
-    (defparameter *stepCounter* 0)
-    ;; TODO read *mapX* and *mapY* from the *map* file
-    (defparameter *mapX* 12)
-    (defparameter *mapY* 8)
-    (defparameter *currX* 1)
-    (defparameter *currY* 1)
-    (defparameter *heading* 1)
-    (defparameter *choiceDir* 0)
-    (defparameter *amount* 0)
-    (defparameter *plan* 0)
-    (defparameter *planX* 0)
-    (defparameter *planY* 0)
-    (defparameter *goHome* 0)
-    (defparameter *lastMove* -1)
-    (defparameter *mapExplored* NIL)
-    (defparameter *map* (make-array (list *mapY* *mapX*) :initial-element 0))
-    (defparameter *visited* (make-array (list *mapY* *mapX*) :initial-element 0))
-    (defparameter *floodMap* (make-array (list *mapY* *mapX*)))
-    (format t "All variables have been reset")
-    ; Create walls
-    (loop for i from 0 to (1- *mapY*) do
-	 (progn
-	   (setf (aref *map* i 0) -1)
-	   (setf (aref *visited* i 0) -1)
-	   (setf (aref *map* i (1- *mapX*)) -1)
-	   (setf (aref *visited* i (1- *mapX*)) -1)))
-    (loop for i from 0 to (1- *mapX*) do
-	 (progn
-	   (setf (aref *map* 0 i) -1)
-	   (setf (aref *visited* 0 i) -1)
-	   (setf (aref *map* (1- *mapY*) i) -1)
-	   (setf (aref *visited* (1- *mapY*) i) -1)))
-
-    (read-a-room "default.txt")
-    (run-environment (make-vacuum-world :aspec '(jason-vacuum)))))
 
 (defun updateHeading ()
   "Update *heading*"

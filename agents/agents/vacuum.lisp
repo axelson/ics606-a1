@@ -42,7 +42,6 @@
   (setf *planY* 0)
   (setf *goHome* 0)
   (setf *lastMove* -1)
-  (setf *mapExplored* NIL)
   (setf *map* (make-array (list *mapY* *mapX*) :initial-element 0))
   (setf *visited* (make-array (list *mapY* *mapX*) :initial-element 0))
   (setf *floodMap* (make-array (list *mapY* *mapX*)))

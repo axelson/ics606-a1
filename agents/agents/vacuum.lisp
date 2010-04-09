@@ -114,8 +114,8 @@
        #'(lambda (percept)
 	   (destructuring-bind (bump dirt home directionsList dirtList catList furnitureList charge fillPercent) percept
 	     (format t "~%BEGINNING OF CODE~%")
-                                        ;(if (> *moveNo* 48)
-                                        ;(read-line))
+             ;;(if (> *moveNo* 48)
+             ;;(read-line))
 	     (read-line)
 	     (format t "Beginning of code")
 	     ;; If there was a bump, undo last move (if applicable)
@@ -129,17 +129,17 @@
 	     (if (not (eq *choiceDir* -1))
 		 (updateVisited))
 
-                                        ;(format t "~%currX: ~A" *currX*)
-                                        ;(format t "~%currY: ~A" *currY*)
-                                        ;(format t "~%Heading: ")
-                                        ;(cond
-                                        ;((eq 0 *heading*) (format t "North"))
-                                        ;((eq 1 *heading*) (format t "East"))
-                                        ;((eq 2 *heading*) (format t "South"))
-                                        ;((eq 3 *heading*) (format t "West"))
-                                        ;(T (format t "INVALID")))
-                                        ;(format t "~%")
-                                        ;(format t "~%Output:~%")
+             ;;(format t "~%currX: ~A" *currX*)
+             ;;(format t "~%currY: ~A" *currY*)
+             ;;(format t "~%Heading: ")
+             ;;(cond
+             ;;((eq 0 *heading*) (format t "North"))
+             ;;((eq 1 *heading*) (format t "East"))
+             ;;((eq 2 *heading*) (format t "South"))
+             ;;((eq 3 *heading*) (format t "West"))
+             ;;(T (format t "INVALID")))
+             ;;(format t "~%")
+             ;;(format t "~%Output:~%")
 
 	     ;; Maps
 	     ;;(printDamnMap *visited* *mapY* *mapX*)

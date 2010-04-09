@@ -48,14 +48,17 @@
       agent
       (program
        #'(lambda (percept)
-	   (destructuring-bind (bump dirt home directionsList dirtList catList furnitureList) percept
-
+	   (destructuring-bind (bump dirt home directionsList dirtList catList furnitureList charge) percept
+	     (format t "~%BEGINNING OF CODE~%")
 	     ;(if (> moveNo 48)
 		 ;(read-line))
 	     (read-line)
+	     (format t "Beginning of code")
 	     ;; If there was a bump, undo last move (if applicable)
 	     (if bump
-		   (undoLastMove))
+		 (progn
+		   (setf plan 0)
+		   (undoLastMove)))
 
 	     (updateMap percept)
 	     (updateHeading)
@@ -75,22 +78,26 @@
 	     ;(format t "~%Output:~%")
 
 	     ;; Maps
-	     (printDamnMap visited mapY mapX)
-	     (format t "~%")
+	     ;;(printDamnMap visited mapY mapX)
+	     ;;(format t "~%")
 	     (printDamnMap map mapY mapX)
-	     (format t "~%")
+	     ;;(format t "~%")
 	     ;;(printDamnMap floodMap mapY mapX)
 
+	     ;; Charge
+	     (if (< charge (* (/ 0.25 2) (* mapY mapX)))
+		 (goHome))
 
-	     ;(if (and (eq moveNo 50) (eq plan 0))
-		; (goHome))
-	     
 	     ;; Check for status on planned path
 	     (if (and (eq plan 1) (and (eq currX planX) (eq currY planY)))
 		 (progn
 		   (setf plan 0)
 		   (if (and (eq 1 planX) (eq 1 planY))
 		       (setf goHome 0))))
+
+	     (if explored
+		 (progn
+		   (format t "ROOM EXPLORED!")))
 
 	     ;; Final action
 	     (if (and dirt (eq goHome 0))
@@ -116,7 +123,7 @@
 			    (progn
 			      (setf amount (aref floodMap currY (1- currX)))
 			      (setf choiceDir 3)))
-
+			
 			;; Action
 			(cond
 			  ((eq 0 choiceDir) (updateAction 'up))
@@ -132,39 +139,36 @@
 			(setf amount amountT)
 			(setf visitNo visitNoT)
 			(setf choiceDir 0)
-
 			;; East
 			(setf amountT (aref map currY (1+ currX)))
 			(setf visitNoT (aref visited currY (1+ currX)))
-			(if (or (> amountT amount) (and (eq amount amountT) (< visitNoT visitNo) (> visitNoT 0)))
+			(if (or (> amountT amount) (and (eq amount amountT) (< visitNoT visitNo) (>= visitNoT 0)))
 			    (progn
 			      (setf amount amountT)
 			      (setf visitNo visitNoT)
 			      (setf choiceDir 1)))
-				
 			;; South
 			(setf amountT (aref map (1- currY) currX))
 			(setf visitNoT (aref visited (1- currY) currX))
-			(if (or (> amountT amount) (and (eq amount amountT) (< visitNoT visitNo) (> visitNoT 0)))
+			(if (or (> amountT amount) (and (eq amount amountT) (< visitNoT visitNo) (>= visitNoT 0)))
 			    (progn
 			      (setf amount amountT)
 			      (setf visitNo visitNoT)
 			      (setf choiceDir 2)))
-
 			;; West
 			(setf amountT (aref map currY (1- currX)))
 			(setf visitNoT (aref visited currY (1- currX)))
-			(if (or (> amountT amount) (and (eq amount amountT) (< visitNoT visitNo) (> visitNoT 0)))
+			(if (or (> amountT amount) (and (eq amount amountT) (< visitNoT visitNo) (>= visitNoT 0)))
 			    (progn
 			      (setf amount amountT)
 			      (setf visitNo visitNoT)
 			      (setf choiceDir 3)))
-			
-			;;
-			(if (eq (allAdjVisited) 1)
+			(format t "~%Visited~%")
+			(printDamnMap visited mapY mapX)
+			(if (allAdjVisited)
 			    (progn
-			      (format t "NO NOTHING!!!!")
-			      (findNext))
+			      (format t "NO MORE NOTHING!!!!~%")
+			      (moveToClosest))
 
 			    (cond
 			      ((eq 0 choiceDir) (updateAction 'up))
@@ -180,6 +184,7 @@
 (defun chris-play ()
   "Reset vacuum variables and launches vacuum"
   (progn
+    (defparameter explored NIL)
     (defparameter suckNo 0)
     (defparameter moveNo 1)
     (defparameter mapX 12)
@@ -228,7 +233,7 @@
 (defun updateMap (percept)
   "Updates map accordingly"
   (progn
-     (destructuring-bind (bump dirt home directionsList dirtList catList furnitureList) percept
+     (destructuring-bind (bump dirt home directionsList dirtList catList furnitureList charge) percept
        ;; North
        (setf tempDirect (car directionsList))
        (setf tempDirt (car dirtList))
@@ -364,16 +369,10 @@
   (setf plan 1)
 )
 
-(defun flood ()
+(defun initialFlood ()
   (loop for i from 0 to (1- mapY) do
        (loop for j from 0 to (1- mapX) do
-	    (progn
-	      (setf cell (aref map i j))
-	      (if (> cell 1)
-		  (setf (aref floodMap i j) 0)
-		  (if (eq cell 1)
-		      (setf (aref floodMap i j) 9)
-		      (setf (aref floodMap i j) (* mapY mapX)))))))
+		      (setf (aref floodMap i j) (* mapY mapX))))
 )
 
 (defun floodDest (destX destY)
@@ -386,15 +385,13 @@
 
   ;; Continue fill
   (setf stepCounter 1)
-  (setFillStatus)
-  (loop while (and (eq 0 fillStatus) (< stepCounter (* mapY mapX))) do
+  (loop while (and (not (fillStatus)) (< stepCounter (* mapY mapX))) do
        (progn
 	 (loop for i from 0 to (1- mapY) do
 	      (loop for j from 0 to (1- mapX) do
 		   (if (eq (aref floodMap i j) (1- stepCounter))
-		       (assign j i))))
-	 (incf stepCounter)
-	 (setFillStatus)))
+			 (assign j i))))
+	 (incf stepCounter)))
 )
 
 (defun assign (coorX coorY)
@@ -420,12 +417,12 @@
     )
 )
 
-(defun setFillStatus ()
-  (setf fillStatus 1)
+(defun fillStatus ()
+  (setf fillStatus T)
   (loop for i from 0 to (1- mapY) do
        (loop for j from 0 to (1- mapX) do
 	    (if (and (> (aref map i j) 0) (eq (aref floodMap i j) (* mapY mapX)))
-		(setf fillStatus 0))))
+		(setf fillStatus NIL))))
 )
 
 (defun printDamnMap (map height width)
@@ -436,7 +433,6 @@
 		 (format t "~%"))))
 
 (defun findNext ()
-  "Instead of using the visited map to find the closest desired point, we trace our steps back to ensure that the point is reachable"
   (let ((dir 0) (x currX) (y currY))
     (loop while (eq plan 0) do
 	 (setf dir (findLastAdj x y (aref visited y x)))
@@ -486,12 +482,98 @@
        (or (eq -1 (aref visited currY (1+ currX))) (> (aref visited currY (1+ currX)) 0))
        (or (eq -1 (aref visited (1- currY) currX)) (> (aref visited (1- currY) currX) 0))
        (or (eq -1 (aref visited currY (1- currX))) (> (aref visited currY (1- currX)) 0)))
-      (return-from allAdjVisited 1)
-      (return-from allAdjVisited 0))
+      (return-from allAdjVisited T)
+      (return-from allAdjVisited NIL))
   )
 
-(defun findClosest ()
-    
+(defun anyAdjVisited (x y)
+  (if (or
+       (> (aref map (1+ y) x) 0)
+       (> (aref map  y (1+ x)) 0)
+       (> (aref map (1- y) x) 0)
+       (> (aref map  y (1- x)) 0))
+      (return-from anyAdjVisited T)
+      (return-from anyAdjVisited NIL))
+  )
+
+(defun moveToClosest ()
+  (generalFlood)
+  (if (not explored)
+      (traceToClosest))
+  )
+
+
+(defun findCandidates ()
+  (let ((count 0))
+    (loop for i from 1 to (1- mapY) do
+	 (loop for j from 1 to (1- mapX ) do
+	      (if (and (or (eq (aref map i j) 0) (> (aref map i j) 1)) (anyAdjVisited j i))
+		  (progn
+		    (setf (aref floodMap i j) 0)
+		    (incf count)))))
+    (format t "CANDIDATE COUNT: ~A~%" count)
+    (if (eq 0 count)
+	(progn
+	  (setf explored T)
+	  (format t "~%MAP EXPLORED!")))
+    ))
+
+(defun generalFlood ()
+  (initialFlood)
+  (findCandidates)
+  ;; Continue fill
+  (setf stepCounter 1)
+  (loop while (and (not (fillStatus)) (< stepCounter (* mapY mapX))) do
+       (progn
+	 (loop for i from 0 to (1- mapY) do
+	      (loop for j from 0 to (1- mapX) do
+		   (if (eq (aref floodMap i j) (1- stepCounter))
+			 (assign j i))))
+	 (incf stepCounter)))
+  (printDamnMap floodMap mapY mapX)
+  )
+
+(defun traceToClosest ()
+  (format t "IN TRACE TO CLOSEST")
+  (let ((x currX) (y currY) (dir 0))
+    (setf fValue (aref floodMap y x))
+    (format t "fValue: ~A~%" fValue)
+    (format t "Curr: ~A ~A ~%" x y)
+    (if (> fValue 0)
+	(progn
+	  (loop while (> fValue 0) do
+	       (progn
+		 ;; North
+		 (if (< (aref floodMap (1+ y) x) fValue)
+		     (progn
+		       (setf fValue (aref floodMap (1+ y) x))
+		       (setf dir 0)))
+		 ;; East
+		 (if (< (aref floodMap y (1+ x)) fValue)
+		     (progn
+		       (setf fValue (aref floodMap y (1+ x)))
+		       (setf dir 1)))
+		 ;; South
+		 (if (< (aref floodMap (1- y) x) fValue)
+		     (progn
+		       (setf fValue (aref floodMap (1- y) x))
+		       (setf dir 2)))
+		 ;; West
+		 (if (< (aref floodMap y (1- x)) fValue)
+		     (progn
+		       (setf fValue (aref floodMap y (1- x)))
+		       (setf dir 3)))
+		 (cond
+		   ((eq 0 dir) (incf y))
+		   ((eq 1 dir) (incf x))
+		   ((eq 2 dir) (decf y))
+		   ((eq 3 dir) (decf x))
+		   (T (format t "SHOULD NOT HAPPEN")))))
+	  (format t "MOVE TO: ~A ~A~%" x y)
+	  (moveTo x y))
+	(progn
+	  (setf (aref visited y x) visitNo)
+	  (incf visitNo))))
   )
 
 

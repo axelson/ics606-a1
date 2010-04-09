@@ -6,14 +6,14 @@
    (:include agent
     (program
      #'(lambda (percept)
-         (destructuring-bind (bump dirt home directions dirlist furnitureList catList charge) percept
+         (destructuring-bind (bump dirt home directions dirlist furnitureList catList charge fillPercent) percept
            (read-line)
            (format t "~%Output: ")
 	   (cond (dirt 'suck)
 		 (bump
 		  (format t "Bump!!~%")
 		  '(turn right))
-		 (home 'forward)
+		 (home 'dump)
                  (t 'up)))))))
 		 ;;(t (random-element '(forward forward forward shut-off
 		;;			      (turn right) (turn left))))))))))
@@ -48,7 +48,7 @@
       agent
       (program
        #'(lambda (percept)
-	   (destructuring-bind (bump dirt home directionsList dirtList catList furnitureList charge) percept
+	   (destructuring-bind (bump dirt home directionsList dirtList catList furnitureList charge fillPercent) percept
 	     (format t "~%BEGINNING OF CODE~%")
 	     ;(if (> moveNo 48)
 		 ;(read-line))

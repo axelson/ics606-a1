@@ -74,7 +74,8 @@
      #'(lambda (percept)
          (destructuring-bind (bump dirt home directions dirlist furnitureList catList charge fillPercent) percept
            (read-line)
-           (format t "~%Output: ")
+           (format t "~%Output: ~A ~A ~A ~A ~A ~A ~A ~A ~A" ;Want to get rid of some style-warnings
+                   bump dirt home directions dirlist furnitureList catList charge fillPercent)
 	   (cond (dirt 'suck)
 		 (bump
 		  (format t "Bump!!~%")
@@ -117,18 +118,17 @@
 	   (destructuring-bind (bump dirt home directionsList dirtList catList furnitureList charge fillPercent) percept
 	     (format t "~%BEGINNING OF CODE~%")
              ;;(if (> *moveNo* 48)
-             ;;(read-line))
 	     (read-line)
-	     (format t "Beginning of code")
+
 	     ;; If there was a bump, undo last move (if applicable)
-	     (if bump
-		 (progn
-		   (setf *plan* 0)
-		   (undoLastMove)))
+	     (when bump
+               (setf *plan* 0)
+               (undoLastMove))
 
 	     (updateMap percept)
 	     (updateHeading)
-	     (if (not (eq *choiceDir* -1))
+
+             (if (not (eq *choiceDir* -1))
 		 (updateVisited))
 
              ;;(format t "~%currX: ~A" *currX*)
@@ -144,11 +144,11 @@
              ;;(format t "~%Output:~%")
 
 	     ;; Maps
-	     ;;(printDamnMap *visited* *mapY* *mapX*)
+	     ;;(printMainMap *visited* *mapY* *mapX*)
 	     ;;(format t "~%")
-	     (printDamnMap *map* *mapY* *mapX*)
+	     (printMainMap *map* *mapY* *mapX*)
 	     ;;(format t "~%")
-	     ;;(printDamnMap *floodMap* *mapY* *mapX*)
+	     ;;(printMainMap *floodMap* *mapY* *mapX*)
 
 	     ;; Charge
 	     (if (< charge (* (/ 0.25 2) (* *mapY* *mapX*)))
@@ -163,7 +163,7 @@
 
 	     (when *explored*
                (format t "ROOM EXPLORED! Now Patrolling (much better than before!)")
-               (setf *mapExplored* T)
+               (setf *explored* T)
                (patrol))
 
 	     ;; Final action
@@ -234,7 +234,7 @@
 
                         
 			(format t "~%Visited~%")
-			(printDamnMap *visited* *mapY* *mapX*)
+			(printMainMap *visited* *mapY* *mapX*)
 			(if (allAdjVisited)
 			    (progn
 			      (format t "NO MORE NOTHING!!!!~%")
@@ -246,7 +246,8 @@
 			      ((eq 2 *choiceDir*) (updateAction 'down))
 			      ((eq 3 *choiceDir*) (updateAction 'left))
 			      (T (progn
-				   (flood)
+                                   ;;TODO - Ask Chris - What is this supposed to be doing? Should this ever even happen? Why not print an error
+				   ;;(flood)     ; JAX I had to comment this out since this function doesn't exist
 				   (updateAction 'shut-off)))))
                         )))))))))
     "A very stupid agent")
@@ -452,8 +453,8 @@
             (setf fillStatus NIL)))))
   )
 
-(defun printDamnMap (thisMap height width)
-  "Prints the damn thisMap"
+(defun printMainMap (thisMap height width)
+  "Prints the main Map"
   (loop for i from (1- height) downto 0
         do (progn (loop for j from 0 to (1- width)
                         do (format t " ~A " (aref thisMap i j)))
@@ -557,12 +558,12 @@
             (if (eq (aref *floodMap* i j) (1- *stepCounter*))
                 (assign j i))))
         (incf *stepCounter*)))
-    (printDamnMap *floodMap* *mapY* *mapX*))
+    (printMainMap *floodMap* *mapY* *mapX*))
   )
 
 (defun patrol ()
   "Called after entire *map* has been *visited*, used to clean up after cats"
-  (printDamnMap *map* *mapY* *mapX*)
+  (printMainMap *map* *mapY* *mapX*)
   (format t "Now Patrolling~%")
   ;; Start at home
   (moveTo 1 1)

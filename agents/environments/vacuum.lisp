@@ -2,6 +2,15 @@
 
 ;;;; The Vacuum World: cleaning up dirt in a grid
 
+;; Call (read-room) before this function to populate global variables
+(defstructure (vacuum-world (:include grid-environment
+    (size (@ room-x room-y))
+    ;;    (size (@ 12 8))
+    (aspec '(random-vacuum-agent))
+    (cspec (generate-cspec))
+    ))
+  "A grid with some dirt in it, and by default a reactive vacuum agent.")
+
 (defstructure (dirt (:include object (name "*") (size 0.01))))
 
 (defstructure (furniture (:include obstacle (name "F") (size 0.01))))
@@ -154,15 +163,6 @@
        (setf ,second-number (parse-integer ,instring :start position :junk-allowed t)))
      ))
   
-
-;; Call (read-room) before this function to populate global variables
-(defstructure (vacuum-world (:include grid-environment
-    (size (@ room-x room-y))
-    ;;    (size (@ 12 8))
-    (aspec '(random-vacuum-agent))
-    (cspec (generate-cspec))
-    ))
-  "A grid with some dirt in it, and by default a reactive vacuum agent.")
 
 (defun generate-cspec ()
   "Generates appropriate cspec for vacuum world"

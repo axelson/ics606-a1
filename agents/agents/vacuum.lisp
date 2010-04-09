@@ -154,7 +154,7 @@
 
 	     ;; Check if need to charge
 	     (when (< charge (* (/ 0.25 2) (* *mapY* *mapX*)))
-               (*goHome*))
+               (goHome))
 
 	     ;; Check for status on planned path
 	     (when (and (eq *plan* 1) (and (eq *currX* *planX*) (eq *currY* *planY*)))
@@ -168,89 +168,91 @@
                (patrol))
 
 	     ;; Final action
-	     (if (and dirt (eq *goHome* 0))
-		 (progn
-		   (setf *choiceDir* -1)
-		   (updateAction 'suck))
-		 (cond
-		   ((eq *plan* 1)
-		    (progn
-		      (let ((*choiceDir* 0) (*amount* (aref *floodMap* (1+ *currY*) *currX*)))
-			;; East
-			(if (< (aref *floodMap* *currY* (1+ *currX*)) *amount*)
-			    (progn
-			      (setf *amount* (aref *floodMap* *currY* (1+ *currX*)))
-			      (setf *choiceDir* 1)))
-			;; South
-			(if (< (aref *floodMap* (1- *currY*) *currX*) *amount*)
-			    (progn
-			      (setf *amount* (aref *floodMap* (1- *currY*) *currX*))
-			      (setf *choiceDir* 2)))
-			;; West
-			(if (< (aref *floodMap* *currY* (1- *currX*)) *amount*)
-			    (progn
-			      (setf *amount* (aref *floodMap* *currY* (1- *currX*)))
-			      (setf *choiceDir* 3)))
-			
-			;; Action
-			(cond
-			  ((eq 0 *choiceDir*) (updateAction 'up))
-			  ((eq 1 *choiceDir*) (updateAction 'right))
-			  ((eq 2 *choiceDir*) (updateAction 'down))
-			  ((eq 3 *choiceDir*) (updateAction 'left)))
-                        )))
-		   
-		   (T (progn
-			;; North
-			(let ((amountT (aref *map* (1+ *currY*) *currX*))
-                              (visitNoT (aref *visited* (1+ *currY*) *currX*)))
-                          ;; TODO why are the global variables being set here
-                          (setf *amount* amountT)
-                          (setf *visitNo* visitNoT)
-                          (setf *choiceDir* 0))
-			;; East
-			(let ((amountT (aref *map* *currY* (1+ *currX*)))
-                              (visitNoT (aref *visited* *currY* (1+ *currX*))))
-                          (if (or (> amountT *amount*) (and (eq *amount* amountT) (< visitNoT *visitNo*) (>= visitNoT 0)))
-                              (progn
-                                (setf *amount* amountT)
-                                (setf *visitNo* visitNoT)
-                                (setf *choiceDir* 1))))
-			;; South
-			(let ((amountT (aref *map* (1- *currY*) *currX*))
-                              (visitNoT (aref *visited* (1- *currY*) *currX*)))
-                          (if (or (> amountT *amount*) (and (eq *amount* amountT) (< visitNoT *visitNo*) (>= visitNoT 0)))
-                              (progn
-                                (setf *amount* amountT)
-                                (setf *visitNo* visitNoT)
-                                (setf *choiceDir* 2))))
-			;; West
-			(let ((amountT (aref *map* *currY* (1- *currX*)))
-                              (visitNoT (aref *visited* *currY* (1- *currX*))))
-                          (if (or (> amountT *amount*) (and (eq *amount* amountT) (< visitNoT *visitNo*) (>= visitNoT 0)))
-                              (progn
-                                (setf *amount* amountT)
-                                (setf *visitNo* visitNoT)
-                                (setf *choiceDir* 3))))
+	     (cond
+               ;; If dirt in current cell, suck it (unless currently going home)
+               ((and dirt (eq *goHome* 0))
+                (setf *choiceDir* -1)
+                (updateAction 'suck))
+               ;; If dirt
+               ((eq *plan* 1)
+                (progn
+                  (let ((*choiceDir* 0)
+                        (*amount* (aref *floodMap* (1+ *currY*) *currX*)))
+                    ;; East
+                    (if (< (aref *floodMap* *currY* (1+ *currX*)) *amount*)
+                        (progn
+                          (setf *amount* (aref *floodMap* *currY* (1+ *currX*)))
+                          (setf *choiceDir* 1)))
+                    ;; South
+                    (if (< (aref *floodMap* (1- *currY*) *currX*) *amount*)
+                        (progn
+                          (setf *amount* (aref *floodMap* (1- *currY*) *currX*))
+                          (setf *choiceDir* 2)))
+                    ;; West
+                    (if (< (aref *floodMap* *currY* (1- *currX*)) *amount*)
+                        (progn
+                          (setf *amount* (aref *floodMap* *currY* (1- *currX*)))
+                          (setf *choiceDir* 3)))
+                    
+                    ;; Action
+                    (cond
+                      ((eq 0 *choiceDir*) (updateAction 'up))
+                      ((eq 1 *choiceDir*) (updateAction 'right))
+                      ((eq 2 *choiceDir*) (updateAction 'down))
+                      ((eq 3 *choiceDir*) (updateAction 'left)))
+                    )))
+               
+               (T (progn
+                    ;; North
+                    (let ((amountT (aref *map* (1+ *currY*) *currX*))
+                          (visitNoT (aref *visited* (1+ *currY*) *currX*)))
+                      ;; TODO why are the global variables being set here
+                      (setf *amount* amountT)
+                      (setf *visitNo* visitNoT)
+                      (setf *choiceDir* 0))
+                    ;; East
+                    (let ((amountT (aref *map* *currY* (1+ *currX*)))
+                          (visitNoT (aref *visited* *currY* (1+ *currX*))))
+                      (if (or (> amountT *amount*) (and (eq *amount* amountT) (< visitNoT *visitNo*) (>= visitNoT 0)))
+                          (progn
+                            (setf *amount* amountT)
+                            (setf *visitNo* visitNoT)
+                            (setf *choiceDir* 1))))
+                    ;; South
+                    (let ((amountT (aref *map* (1- *currY*) *currX*))
+                          (visitNoT (aref *visited* (1- *currY*) *currX*)))
+                      (if (or (> amountT *amount*) (and (eq *amount* amountT) (< visitNoT *visitNo*) (>= visitNoT 0)))
+                          (progn
+                            (setf *amount* amountT)
+                            (setf *visitNo* visitNoT)
+                            (setf *choiceDir* 2))))
+                    ;; West
+                    (let ((amountT (aref *map* *currY* (1- *currX*)))
+                          (visitNoT (aref *visited* *currY* (1- *currX*))))
+                      (if (or (> amountT *amount*) (and (eq *amount* amountT) (< visitNoT *visitNo*) (>= visitNoT 0)))
+                          (progn
+                            (setf *amount* amountT)
+                            (setf *visitNo* visitNoT)
+                            (setf *choiceDir* 3))))
 
-                        
-			(format t "~%Visited~%")
-			(printMainMap *visited* *mapY* *mapX*)
-			(if (allAdjVisited)
-			    (progn
-			      (format t "NO MORE NOTHING!!!!~%")
-			      (moveToClosest))
+                    
+                    (format t "~%Visited~%")
+                    (printMainMap *visited* *mapY* *mapX*)
+                    (if (allAdjVisited)
+                        (progn
+                          (format t "NO MORE NOTHING!!!!~%")
+                          (moveToClosest))
 
-			    (cond
-			      ((eq 0 *choiceDir*) (updateAction 'up))
-			      ((eq 1 *choiceDir*) (updateAction 'right))
-			      ((eq 2 *choiceDir*) (updateAction 'down))
-			      ((eq 3 *choiceDir*) (updateAction 'left))
-			      (T (progn
-                                   ;;TODO - Ask Chris - What is this supposed to be doing? Should this ever even happen? Why not print an error
-				   ;;(flood)     ; JAX I had to comment this out since this function doesn't exist
-				   (updateAction 'shut-off)))))
-                        )))))))))
+                        (cond
+                          ((eq 0 *choiceDir*) (updateAction 'up))
+                          ((eq 1 *choiceDir*) (updateAction 'right))
+                          ((eq 2 *choiceDir*) (updateAction 'down))
+                          ((eq 3 *choiceDir*) (updateAction 'left))
+                          (T (progn
+                               ;;TODO - Ask Chris - What is this supposed to be doing? Should this ever even happen? Why not print an error
+                               ;;(flood)     ; JAX I had to comment this out since this function doesn't exist
+                               (updateAction 'shut-off)))))
+                    ))))))))
     "A very stupid agent")
 
 (defun updateHeading ()
@@ -332,30 +334,31 @@
   "Performs various updates per action taken"
   ; suck forward turn (L,R) shut-off up down left right
   (cond
-    ((eq action 'suck)
-     (if (> (aref *map* *currY* *currX*) 1)
-         (decf (aref *map* *currY* *currX*)))
-     'suck)
-    ((eq action 'forward)
-     (cond
-       ((eq *heading* 0) (incf *currY*))
-       ((eq *heading* 1) (incf *currX*))
-       ((eq *heading* 2) (decf *currY*))
-       ((eq *heading* 3) (decf *currX*)))
-     'forward)
-    ((eq action 'turnL)
-     (decf *heading*)
-     '(turn left))
-    ((eq action 'turnR)
-     (incf *heading*)
-     '(turn right))
-    ((eq action 'shut-off)
-     (format t "shut-off"))
-    ((eq action 'up)
-     (setf *lastMove* 0)
-     (setf *heading* 0)
-     (incf *currY*)
-     'up)
+    ((eq action 'suck) (progn
+			 (if (> (aref *map* *currY* *currX*) 1)
+			     (decf (aref *map* *currY* *currX*)))
+			 'suck))
+    ((eq action 'forward) (progn
+			    (cond
+			      ((eq *heading* 0) (incf *currY*))
+			      ((eq *heading* 1) (incf *currX*))
+			      ((eq *heading* 2) (decf *currY*))
+			      ((eq *heading* 3) (decf *currX*))
+			      )
+			    'forward))
+    ((eq action 'turnL) (progn
+			  (decf *heading*)
+			  '(turn left)))
+    ((eq action 'turnR) (progn
+			  (incf *heading*)
+			  '(turn right)))
+    ((eq action 'shut-off) (progn
+			     (format t "shut-off")))
+    ((eq action 'up) (progn
+		       (setf *lastMove* 0)
+		       (setf *heading* 0)
+		       (incf *currY*)
+		       'up))
     ((eq action 'down) (progn
 			 (setf *lastMove* 2)
 			 (setf *heading* 2)
@@ -380,7 +383,7 @@
     ((eq *lastMove* 3) (incf *currX*)))
 )
 
-(defun *goHome* ()
+(defun goHome ()
   (moveTo 1 1)
   (setf *goHome* 1)
 )
@@ -565,7 +568,7 @@
   (printMainMap *map* *mapY* *mapX*)
   (format t "Now Patrolling~%")
   ;; Start at home
-  (moveTo 1 1)
+  (goHome)
 
   ;; Loop until visited the entire room again
 

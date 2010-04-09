@@ -1,6 +1,10 @@
 ;;; -*- Mode: Lisp; Syntax: Common-Lisp; -*- Author: Jason Axelson and Chris Ho
 
 (progn
+  ;;Constants
+  (defparameter +maxFill+ 0.4 "Maximum amount of things agent can hold")
+
+  ;;Global Variables
   (defparameter *explored* NIL "true if entire map has been explored")
   (defparameter *moveNo* 1 "total number of times vacuum has moved")
   (defparameter *visitNo* 1 "total ")
@@ -115,7 +119,7 @@
       agent
       (program
        #'(lambda (percept)
-	   (destructuring-bind (bump dirt home directionsList dirtList catList furnitureList charge fillPercent) percept
+	   (destructuring-bind (bump dirt atHome directionsList dirtList catList furnitureList charge fillPercent) percept
 	     (format t "~%BEGINNING OF CODE~%")
              ;;(if (> *moveNo* 48)
 	     (read-line)
@@ -153,7 +157,7 @@
              ;; If at home and need to dump or charge, do so
 
 	     ;; Check if need to charge
-	     (when (< charge (* (/ 0.25 2) (* *mapY* *mapX*)))
+	     (when (needCharge? charge)
                (goHome))
 
 	     ;; Check for status on planned path
@@ -173,7 +177,15 @@
                ((and dirt (eq *goHome* 0))
                 (setf *choiceDir* -1)
                 (updateAction 'suck))
-               ;; If dirt
+
+               ;; If at home check if need to charge or dump
+               (atHome
+                (cond
+                  ((needCharge? charge)
+                   (updateAction 'charge))
+                  ((needDump? fillPercent)
+                   (updateAction 'dump))))
+               
                ((eq *plan* 1)
                 (progn
                   (let ((*choiceDir* 0)
@@ -254,6 +266,16 @@
                                (updateAction 'shut-off)))))
                     ))))))))
     "A very stupid agent")
+
+;;Agent needs
+(defun needCharge? (charge)
+  "Checks if the agent currently needs a charge"
+  ;;TODO - figure out what this does
+  (< charge (* (/ 0.25 2) (* *mapY* *mapX*))))
+
+(defun needDump? (fillPercent)
+  "Checks if the agent currently needs to dump"
+  (> fillPercent (1- +maxFill+)))
 
 (defun updateHeading ()
   "Update *heading*"

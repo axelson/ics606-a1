@@ -561,7 +561,13 @@
 (defun patrol ()
   "Called after entire *map* has been *visited*, used to clean up after cats"
   (printDamnMap *map* *mapY* *mapX*)
-  
+  (format t "Now Patrolling~%")
+  ;; Start at home
+  (moveTo 1 1)
+
+  ;; Loop until visited the entire room again
+
+  ;; We need a new map for things unvisited on this pass
   )
 
 (defun traceToClosest ()

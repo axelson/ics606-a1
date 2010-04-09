@@ -1,11 +1,9 @@
 ;;; -*- Mode: Lisp; Syntax: Common-Lisp; -*- Author: Peter Norvig
 
 (progn
-  (defparameter *explored* NIL)
-  (defparameter *mapExplored* NIL)
-  (defparameter *suckNo* 0)
-  (defparameter *moveNo* 1)
-  (defparameter *visitNo* 1)
+  (defparameter *explored* NIL "true if entire map has been explored")
+  (defparameter *moveNo* 1 "total number of times vacuum has moved")
+  (defparameter *visitNo* 1 "total ")
   (defparameter *stepCounter* 0)
   ;; TODO read *mapX* and *mapY* from the *map* file
   (defparameter *mapX* 12)
@@ -21,13 +19,13 @@
   (defparameter *goHome* 0)
   (defparameter *lastMove* -1)
   (defparameter *map* (make-array (list *mapY* *mapX*) :initial-element 0))
-  (defparameter *visited* (make-array (list *mapY* *mapX*) :initial-element 0))
+  (defparameter *visited* (make-array (list *mapY* *mapX*) :initial-element 0)
+    "Map showing when each cell was last visited")
   (defparameter *floodMap* (make-array (list *mapY* *mapX*))))
 
 (defun chris-play ()
   "Reset vacuum variables and launches vacuum"
   (setf *explored* NIL)
-  (setf *suckNo* 0)
   (setf *moveNo* 1)
   (setf *visitNo* 1)
   (setf *stepCounter* 0)
@@ -116,8 +114,8 @@
        #'(lambda (percept)
 	   (destructuring-bind (bump dirt home directionsList dirtList catList furnitureList charge fillPercent) percept
 	     (format t "~%BEGINNING OF CODE~%")
-	     ;(if (> *moveNo* 48)
-		 ;(read-line))
+                                        ;(if (> *moveNo* 48)
+                                        ;(read-line))
 	     (read-line)
 	     (format t "Beginning of code")
 	     ;; If there was a bump, undo last move (if applicable)
@@ -131,17 +129,17 @@
 	     (if (not (eq *choiceDir* -1))
 		 (updateVisited))
 
-	     ;(format t "~%currX: ~A" *currX*)
-	     ;(format t "~%currY: ~A" *currY*)
-	     ;(format t "~%Heading: ")
-	     ;(cond
-	       ;((eq 0 *heading*) (format t "North"))
-	       ;((eq 1 *heading*) (format t "East"))
-	       ;((eq 2 *heading*) (format t "South"))
-	       ;((eq 3 *heading*) (format t "West"))
-	       ;(T (format t "INVALID")))
-	     ;(format t "~%")
-	     ;(format t "~%Output:~%")
+                                        ;(format t "~%currX: ~A" *currX*)
+                                        ;(format t "~%currY: ~A" *currY*)
+                                        ;(format t "~%Heading: ")
+                                        ;(cond
+                                        ;((eq 0 *heading*) (format t "North"))
+                                        ;((eq 1 *heading*) (format t "East"))
+                                        ;((eq 2 *heading*) (format t "South"))
+                                        ;((eq 3 *heading*) (format t "West"))
+                                        ;(T (format t "INVALID")))
+                                        ;(format t "~%")
+                                        ;(format t "~%Output:~%")
 
 	     ;; Maps
 	     ;;(printDamnMap *visited* *mapY* *mapX*)
@@ -197,39 +195,42 @@
 			  ((eq 1 *choiceDir*) (updateAction 'right))
 			  ((eq 2 *choiceDir*) (updateAction 'down))
 			  ((eq 3 *choiceDir*) (updateAction 'left)))
-		      )))
+                        )))
 		   
 		   (T (progn
 			;; North
-			(setf amountT (aref *map* (1+ *currY*) *currX*))
-			(setf visitNoT (aref *visited* (1+ *currY*) *currX*))
-			(setf *amount* amountT)
-			(setf *visitNo* visitNoT)
-			(setf *choiceDir* 0)
+			(let ((amountT (aref *map* (1+ *currY*) *currX*))
+                              (visitNoT (aref *visited* (1+ *currY*) *currX*)))
+                          ;; TODO why are the global variables being set here
+                          (setf *amount* amountT)
+                          (setf *visitNo* visitNoT)
+                          (setf *choiceDir* 0))
 			;; East
-			(setf amountT (aref *map* *currY* (1+ *currX*)))
-			(setf visitNoT (aref *visited* *currY* (1+ *currX*)))
-			(if (or (> amountT *amount*) (and (eq *amount* amountT) (< visitNoT *visitNo*) (>= visitNoT 0)))
-			    (progn
-			      (setf *amount* amountT)
-			      (setf *visitNo* visitNoT)
-			      (setf *choiceDir* 1)))
+			(let ((amountT (aref *map* *currY* (1+ *currX*)))
+                              (visitNoT (aref *visited* *currY* (1+ *currX*))))
+                          (if (or (> amountT *amount*) (and (eq *amount* amountT) (< visitNoT *visitNo*) (>= visitNoT 0)))
+                              (progn
+                                (setf *amount* amountT)
+                                (setf *visitNo* visitNoT)
+                                (setf *choiceDir* 1))))
 			;; South
-			(setf amountT (aref *map* (1- *currY*) *currX*))
-			(setf visitNoT (aref *visited* (1- *currY*) *currX*))
-			(if (or (> amountT *amount*) (and (eq *amount* amountT) (< visitNoT *visitNo*) (>= visitNoT 0)))
-			    (progn
-			      (setf *amount* amountT)
-			      (setf *visitNo* visitNoT)
-			      (setf *choiceDir* 2)))
+			(let ((amountT (aref *map* (1- *currY*) *currX*))
+                              (visitNoT (aref *visited* (1- *currY*) *currX*)))
+                          (if (or (> amountT *amount*) (and (eq *amount* amountT) (< visitNoT *visitNo*) (>= visitNoT 0)))
+                              (progn
+                                (setf *amount* amountT)
+                                (setf *visitNo* visitNoT)
+                                (setf *choiceDir* 2))))
 			;; West
-			(setf amountT (aref *map* *currY* (1- *currX*)))
-			(setf visitNoT (aref *visited* *currY* (1- *currX*)))
-			(if (or (> amountT *amount*) (and (eq *amount* amountT) (< visitNoT *visitNo*) (>= visitNoT 0)))
-			    (progn
-			      (setf *amount* amountT)
-			      (setf *visitNo* visitNoT)
-			      (setf *choiceDir* 3)))
+			(let ((amountT (aref *map* *currY* (1- *currX*)))
+                              (visitNoT (aref *visited* *currY* (1- *currX*))))
+                          (if (or (> amountT *amount*) (and (eq *amount* amountT) (< visitNoT *visitNo*) (>= visitNoT 0)))
+                              (progn
+                                (setf *amount* amountT)
+                                (setf *visitNo* visitNoT)
+                                (setf *choiceDir* 3))))
+
+                        
 			(format t "~%Visited~%")
 			(printDamnMap *visited* *mapY* *mapX*)
 			(if (allAdjVisited)
@@ -245,8 +246,8 @@
 			      (T (progn
 				   (flood)
 				   (updateAction 'shut-off)))))
-			    )))))))))
-     "A very stupid agent")
+                        )))))))))
+    "A very stupid agent")
 
 (defun updateHeading ()
   "Update *heading*"
@@ -331,7 +332,6 @@
     ((eq action 'suck) (progn
 			 (if (> (aref *map* *currY* *currX*) 1)
 			     (decf (aref *map* *currY* *currX*)))
-			 (incf *suckNo*)
 			 'suck))
     ((eq action 'forward) (progn
 			    (cond

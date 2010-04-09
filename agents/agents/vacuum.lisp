@@ -507,8 +507,8 @@
        (or (eq -1 (aref *visited* *currY* (1+ *currX*))) (> (aref *visited* *currY* (1+ *currX*)) 0))
        (or (eq -1 (aref *visited* (1- *currY*) *currX*)) (> (aref *visited* (1- *currY*) *currX*) 0))
        (or (eq -1 (aref *visited* *currY* (1- *currX*))) (> (aref *visited* *currY* (1- *currX*)) 0)))
-      (return-from allAdjVisited T)
-      (return-from allAdjVisited NIL))
+      T
+      NIL)
   )
 
 (defun anyAdjVisited (x y)
@@ -517,8 +517,8 @@
        (> (aref *map*  y (1+ x)) 0)
        (> (aref *map* (1- y) x) 0)
        (> (aref *map*  y (1- x)) 0))
-      (return-from anyAdjVisited T)
-      (return-from anyAdjVisited NIL))
+      T
+      NIL)
   )
 
 (defun moveToClosest ()

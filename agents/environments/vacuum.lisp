@@ -240,7 +240,8 @@
           (check-dirt env agent-body)
           (check-cats env agent-body)
           (check-furniture env agent-body)
-          (agent-body-charge agent-body))
+          (agent-body-charge agent-body)
+          (sum (object-contents agent-body) #'object-size))
     ))
 
 (defmethod legal-actions ((env vacuum-world))

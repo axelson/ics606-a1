@@ -420,27 +420,27 @@
   )
 
 (defun assign (coorX coorY)
-  ;; North
   (let ((x coorX) (y (1+ coorY)))
+    ;; North
     (if (and (> (aref *floodMap* y x) *stepCounter*) (> (aref *map* y x) 0))
 	(setf (aref *floodMap* y x) *stepCounter*))
-  ;; East
+    ;; East
     (setf x (1+ coorX))
     (setf y coorY)
     (if (and (> (aref *floodMap* y x) *stepCounter*) (> (aref *map* y x) 0))
 	(setf (aref *floodMap* y x) *stepCounter*))
-  ;; South
+    ;; South
     (setf x coorX)
     (setf y (1- coorY))
     (if (and (> (aref *floodMap* y x) *stepCounter*) (> (aref *map* y x) 0))
 	(setf (aref *floodMap* y x) *stepCounter*))
-  ;; West
+    ;; West
     (setf x (1- coorX))
     (setf y coorY)
     (if (and (> (aref *floodMap* y x) *stepCounter*) (> (aref *map* y x) 0))
 	(setf (aref *floodMap* y x) *stepCounter*))
     )
-)
+  )
 
 (defun fillStatus ()
   (let ((fillStatus T))
@@ -453,23 +453,23 @@
 (defun printDamnMap (thisMap height width)
   "Prints the damn thisMap"
   (loop for i from (1- height) downto 0
-       do (progn (loop for j from 0 to (1- width)
-	       do (format t " ~A " (aref thisMap i j)))
-		 (format t "~%"))))
+        do (progn (loop for j from 0 to (1- width)
+                        do (format t " ~A " (aref thisMap i j)))
+                  (format t "~%"))))
 
 (defun findNext ()
   (let ((dir 0) (x *currX*) (y *currY*))
     (loop while (eq *plan* 0) do
-	 (setf dir (findLastAdj x y (aref *visited* y x)))
-	 (cond
-	   ((eq dir 0) (incf y))
-	   ((eq dir 1) (incf x))
-	   ((eq dir 2) (decf y))
-	   ((eq dir 3) (decf x))))
+      (setf dir (findLastAdj x y (aref *visited* y x)))
+      (cond
+        ((eq dir 0) (incf y))
+        ((eq dir 1) (incf x))
+        ((eq dir 2) (decf y))
+        ((eq dir 3) (decf x))))
     ;; Action
     (format t "MOVING TO: (~A ~A)" x y)
     (moveTo x y))
-)
+  )
 
 (defun findLastAdj (x y currValue)
   (cond

@@ -244,7 +244,7 @@
     ))
 
 (defmethod legal-actions ((env vacuum-world))
-  '(suck forward turn shut-off charge up down left right cat-sleep shed cat-up cat-down cat-left cat-right))
+  '(suck forward turn shut-off charge dump up down left right cat-sleep shed cat-up cat-down cat-left cat-right))
 
 ;;;; Actions (other than the basic grid actions of forward and turn)
 
@@ -285,6 +285,17 @@
         (setf (agent-body-charge agent-body) 100)
 	(format t " to ~A~%" (agent-body-charge agent-body)))
       (format t "Cannot if not in home square~%")))
+
+(defmethod dump ((env environment) agent-body)
+  "Dump if in home square"
+  (format t "~%object max contents: ~A" (object-max-contents agent-body))
+  (format t "~%current contents: ~A~%" (sum (object-contents agent-body) #'object-size))
+  (if (equal (agent-body-loc agent-body) (grid-environment-start env))
+      (progn
+	(format t "Dumping from ~A" (object-contents agent-body))
+        (setf (object-contents agent-body) nil)
+	(format t " to ~A~%" (object-contents agent-body)))
+      (format t "Cannot dump if not in home square~%")))
 
 (defmacro direction-generator (name direction)
   `(defmethod ,name ((env vacuum-world) agent-body)

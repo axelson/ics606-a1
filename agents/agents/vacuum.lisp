@@ -125,7 +125,7 @@
                (setf *plan* 0)
                (undoLastMove))
 
-	     (updateMap percept)
+	     (updateMap directionsList dirtList catList furnitureList)
 	     (updateHeading)
 
              (if (not (eq *choiceDir* -1))
@@ -150,16 +150,17 @@
 	     ;;(format t "~%")
 	     ;;(printMainMap *floodMap* *mapY* *mapX*)
 
-	     ;; Charge
-	     (if (< charge (* (/ 0.25 2) (* *mapY* *mapX*)))
-		 (*goHome*))
+             ;; If at home and need to dump or charge, do so
+
+	     ;; Check if need to charge
+	     (when (< charge (* (/ 0.25 2) (* *mapY* *mapX*)))
+               (*goHome*))
 
 	     ;; Check for status on planned path
-	     (if (and (eq *plan* 1) (and (eq *currX* *planX*) (eq *currY* *planY*)))
-		 (progn
-		   (setf *plan* 0)
-		   (if (and (eq 1 *planX*) (eq 1 *planY*))
-		       (setf *goHome* 0))))
+	     (when (and (eq *plan* 1) (and (eq *currX* *planX*) (eq *currY* *planY*)))
+               (setf *plan* 0)
+               (if (and (eq 1 *planX*) (eq 1 *planY*))
+                   (setf *goHome* 0)))
 
 	     (when *explored*
                (format t "ROOM EXPLORED! Now Patrolling (much better than before!)")
@@ -261,102 +262,100 @@
   (incf *moveNo*)
   )
 
-(defun updateMap (percept)
+(defun updateMap (directionsList dirtList catList furnitureList)
   "Updates *map* accordingly"
-  (destructuring-bind (bump dirt home directionsList dirtList catList furnitureList charge fillPercent) percept
-    (let ((tempDirect (car directionsList))
-          (tempDirt (car dirtList))
-          (tempFurn (car furnitureList))
-          (tempCat (car catList)))
-      ;; North
-      (cond
-        ((numberp tempDirt) (setf (aref *map* (1+ *currY*) *currX*) (1+ tempDirt)))
-        (tempFurn (progn (setf (aref *map* (1+ *currY*) *currX*) -1)
-                         (setf (aref *visited* (1+ *currY*) *currX*) -1)))
-        (tempCat (setf (aref *map* (1+ *currY*) *currX*) 0))
-        (tempDirect (setf (aref *map* (1+ *currY*) *currX*) 1))
-        ;; Walls
-        (T (progn (setf (aref *map* (1+ *currY*) *currX*) -1)
-                  (setf (aref *visited* (1+ *currY*) *currX*) -1)))))
-    
-    ;; East
-    (let ((tempDirect (cadr directionsList))
-          (tempDirt (cadr dirtList))
-          (tempFurn (cadr furnitureList))
-          (tempCat (cadr catList)))
+  (let ((tempDirect (car directionsList))
+        (tempDirt (car dirtList))
+        (tempFurn (car furnitureList))
+        (tempCat (car catList)))
+    ;; North
+    (cond
+      ((numberp tempDirt) (setf (aref *map* (1+ *currY*) *currX*) (1+ tempDirt)))
+      (tempFurn (progn (setf (aref *map* (1+ *currY*) *currX*) -1)
+                       (setf (aref *visited* (1+ *currY*) *currX*) -1)))
+      (tempCat (setf (aref *map* (1+ *currY*) *currX*) 0))
+      (tempDirect (setf (aref *map* (1+ *currY*) *currX*) 1))
+      ;; Walls
+      (T (progn (setf (aref *map* (1+ *currY*) *currX*) -1)
+                (setf (aref *visited* (1+ *currY*) *currX*) -1)))))
+  
+  ;; East
+  (let ((tempDirect (cadr directionsList))
+        (tempDirt (cadr dirtList))
+        (tempFurn (cadr furnitureList))
+        (tempCat (cadr catList)))
 
-      (cond
-        ((numberp tempDirt) (setf (aref *map* *currY* (1+ *currX*)) (1+ tempDirt)))
-        (tempFurn (progn (setf (aref *map* *currY* (1+ *currX*)) -1)
-                         (setf (aref *visited* *currY* (1+ *currX*)) -1)))
-        (tempCat (setf (aref *map* *currY* (1+ *currX*)) 0))
-        (tempDirect (setf (aref *map* *currY* (1+ *currX*)) 1))
-        ;; Walls
-        (T (progn (setf (aref *map* *currY* (1+ *currX*)) -1)
-                  (setf (aref *visited* *currY* (1+ *currX*)) -1)))))
+    (cond
+      ((numberp tempDirt) (setf (aref *map* *currY* (1+ *currX*)) (1+ tempDirt)))
+      (tempFurn (progn (setf (aref *map* *currY* (1+ *currX*)) -1)
+                       (setf (aref *visited* *currY* (1+ *currX*)) -1)))
+      (tempCat (setf (aref *map* *currY* (1+ *currX*)) 0))
+      (tempDirect (setf (aref *map* *currY* (1+ *currX*)) 1))
+      ;; Walls
+      (T (progn (setf (aref *map* *currY* (1+ *currX*)) -1)
+                (setf (aref *visited* *currY* (1+ *currX*)) -1)))))
 
-    ;; South
-    (let ((tempDirect (caddr directionsList))
-          (tempDirt (caddr dirtList))
-          (tempFurn (caddr furnitureList))
-          (tempCat (caddr catList)))
+  ;; South
+  (let ((tempDirect (caddr directionsList))
+        (tempDirt (caddr dirtList))
+        (tempFurn (caddr furnitureList))
+        (tempCat (caddr catList)))
 
-      (cond
-        ((numberp tempDirt) (setf (aref *map* (1- *currY*) *currX*) (1+ tempDirt)))
-        (tempFurn (progn (setf (aref *map* (1- *currY*) *currX*) -1)
-                         (setf (aref *visited* (1- *currY*) *currX*) -1)))
-        (tempCat (setf (aref *map* (1- *currY*) *currX*) 0))
-        (tempDirect (setf (aref *map* (1- *currY*) *currX*) 1))
-        ;; Walls
-        (T (progn (setf (aref *map* (1- *currY*) *currX*) -1)
-                  (setf (aref *visited* (1- *currY*) *currX*) -1)))))
+    (cond
+      ((numberp tempDirt) (setf (aref *map* (1- *currY*) *currX*) (1+ tempDirt)))
+      (tempFurn (progn (setf (aref *map* (1- *currY*) *currX*) -1)
+                       (setf (aref *visited* (1- *currY*) *currX*) -1)))
+      (tempCat (setf (aref *map* (1- *currY*) *currX*) 0))
+      (tempDirect (setf (aref *map* (1- *currY*) *currX*) 1))
+      ;; Walls
+      (T (progn (setf (aref *map* (1- *currY*) *currX*) -1)
+                (setf (aref *visited* (1- *currY*) *currX*) -1)))))
 
-    ;; West
-    (let ((tempDirect (cadddr directionsList))
-          (tempDirt (cadddr dirtList))
-          (tempFurn (cadddr furnitureList))
-          (tempCat (cadddr catList)))
+  ;; West
+  (let ((tempDirect (cadddr directionsList))
+        (tempDirt (cadddr dirtList))
+        (tempFurn (cadddr furnitureList))
+        (tempCat (cadddr catList)))
 
-      (cond
-        ((numberp tempDirt) (setf (aref *map* *currY* (1- *currX*)) (1+ tempDirt)))
-        (tempFurn (progn (setf (aref *map* *currY* (1- *currX*)) -1)
-                         (setf (aref *visited* *currY* (1- *currX*)) -1)))
-        (tempCat (setf (aref *map* *currY* (1- *currX*)) 0))
-        (tempDirect (setf (aref *map* *currY* (1- *currX*)) 1))
-        ;; Walls
-        (T (progn (setf (aref *map* *currY* (1- *currX*)) -1)
-                  (setf (aref *visited* *currY* (1- *currX*)) -1)))))
-    ))
+    (cond
+      ((numberp tempDirt) (setf (aref *map* *currY* (1- *currX*)) (1+ tempDirt)))
+      (tempFurn (progn (setf (aref *map* *currY* (1- *currX*)) -1)
+                       (setf (aref *visited* *currY* (1- *currX*)) -1)))
+      (tempCat (setf (aref *map* *currY* (1- *currX*)) 0))
+      (tempDirect (setf (aref *map* *currY* (1- *currX*)) 1))
+      ;; Walls
+      (T (progn (setf (aref *map* *currY* (1- *currX*)) -1)
+                (setf (aref *visited* *currY* (1- *currX*)) -1)))))
+  )
 
 (defun updateAction (action)
   "Performs various updates per action taken"
   ; suck forward turn (L,R) shut-off up down left right
   (cond
-    ((eq action 'suck) (progn
-			 (if (> (aref *map* *currY* *currX*) 1)
-			     (decf (aref *map* *currY* *currX*)))
-			 'suck))
-    ((eq action 'forward) (progn
-			    (cond
-			      ((eq *heading* 0) (incf *currY*))
-			      ((eq *heading* 1) (incf *currX*))
-			      ((eq *heading* 2) (decf *currY*))
-			      ((eq *heading* 3) (decf *currX*))
-			      )
-			    'forward))
-    ((eq action 'turnL) (progn
-			  (decf *heading*)
-			  '(turn left)))
-    ((eq action 'turnR) (progn
-			  (incf *heading*)
-			  '(turn right)))
-    ((eq action 'shut-off) (progn
-			     (format t "shut-off")))
-    ((eq action 'up) (progn
-		       (setf *lastMove* 0)
-		       (setf *heading* 0)
-		       (incf *currY*)
-		       'up))
+    ((eq action 'suck)
+     (if (> (aref *map* *currY* *currX*) 1)
+         (decf (aref *map* *currY* *currX*)))
+     'suck)
+    ((eq action 'forward)
+     (cond
+       ((eq *heading* 0) (incf *currY*))
+       ((eq *heading* 1) (incf *currX*))
+       ((eq *heading* 2) (decf *currY*))
+       ((eq *heading* 3) (decf *currX*)))
+     'forward)
+    ((eq action 'turnL)
+     (decf *heading*)
+     '(turn left))
+    ((eq action 'turnR)
+     (incf *heading*)
+     '(turn right))
+    ((eq action 'shut-off)
+     (format t "shut-off"))
+    ((eq action 'up)
+     (setf *lastMove* 0)
+     (setf *heading* 0)
+     (incf *currY*)
+     'up)
     ((eq action 'down) (progn
 			 (setf *lastMove* 2)
 			 (setf *heading* 2)

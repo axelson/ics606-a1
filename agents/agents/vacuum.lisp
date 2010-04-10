@@ -276,7 +276,7 @@
 
 (defun needDump? (fillPercent)
   "Checks if the agent currently needs to dump"
-  (> fillPercent (1- +maxFill+)))
+  (> fillPercent (* 0.75 +maxFill+)))
 
 (defun updateHeading ()
   "Update *heading*"

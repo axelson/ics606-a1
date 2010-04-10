@@ -396,7 +396,14 @@
 			  (setf *lastMove* 1)
 			  (setf *heading* 1)
 			  (incf *currX*)
-			  'right))))
+			  'right))
+    ((eq action 'charge)
+     'charge)
+    ((eq action 'dump)
+     'dump)
+    (T
+     (format t "updateAction: Unable to do action ~A, doing nil instead~%" action)
+     nil)))
 
 (defun undoLastMove ()
   (cond

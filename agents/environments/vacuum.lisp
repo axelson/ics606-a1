@@ -284,8 +284,9 @@
 
 ;;;; Actions (other than the basic grid actions of forward and turn)
 
-(defmethod expend-energy ((env vacuum-world) agent-body &optional (energy 0.25))
-  (format t "expend-energy: expending ~A energy leaving " energy)
+(defmethod expend-energy ((env vacuum-world) agent-body &optional (energy 1.25))
+  (when (> *debug* 1)
+    (format t "expend-energy: expending ~A energy leaving " energy))
   (setf (agent-body-charge agent-body) (- (agent-body-charge agent-body)
                                           energy))
   (format t "~A~%" (agent-body-charge agent-body))
@@ -295,8 +296,9 @@
     (shut-off env agent-body)))
 
 (defmethod suck ((env vacuum-world) agent-body)
-  (format t "~%object max contents: ~A" (object-max-contents agent-body))
-  (format t "~%current contents: ~A" (sum (object-contents agent-body) #'object-size))
+  (when (> *debug* 1)
+    (format t "~%object max contents: ~A" (object-max-contents agent-body))
+    (format t "~%current contents: ~A~%" (sum (object-contents agent-body) #'object-size)))
   (expend-energy env agent-body)
   (let ((dirt (find-object-if #'dirt-p (object-loc agent-body) env)))
     (when dirt

@@ -1,10 +1,12 @@
 ;;; -*- Mode: Lisp; Syntax: Common-Lisp; -*- Author: Jason Axelson and Chris Ho
 
+(defvar *debug* 0)                      ;0 means no debug printed
+
 (progn
   ;;Constants
   (defparameter +maxFill+ 0.4 "Maximum amount of things agent can hold")
 
-  ;;Global Variables
+  ;;Global Variables for vacuum
   (defparameter *explored* NIL "true if entire map has been explored")
   (defparameter *moveNo* 1 "total number of times vacuum has moved")
   (defparameter *visitNo* 1 "total ")
@@ -53,7 +55,8 @@
     (setf *visited* (make-array (list *mapY* *mapX*) :initial-element 0))
     ;;(setf *seenCurrentPatrol* (make-array (list *mapY* *mapX*) :initial-element 0))
     (setf *floodMap* (make-array (list *mapY* *mapX*)))
-    (format t "All variables have been reset")
+    (when (> *debug* 1)
+      (format t "All variables have been reset"))
     ;; Create walls
     (createWalls)
 
@@ -103,7 +106,8 @@
 
 (defun jason-vacuum-agent (percept)
   (destructuring-bind (bump dirt atHome directionsList dirtList catList furnitureList charge fillPercent) percept
-    (format t "~%BEGINNING OF CODE~%")
+    (when (> *debug* 1)
+      (format t "~%BEGINNING OF CODE~%"))
     ;;(if (> *moveNo* 48)
     (read-line)
 
@@ -134,8 +138,9 @@
     ;; Maps
     ;;(printMap *visited* *mapY* *mapX*)
     ;;(format t "~%")
-    (format t "*map*:~%")
-    (printMap *map* *mapY* *mapX*)
+    (when (> *debug* 1)
+      (format t "*map*:~%")
+      (printMap *map* *mapY* *mapX*))
 
     ;;(format t "*seenCurrentPatrol*:~%")
     ;;(printMap *seenCurrentPatrol* *mapX* *mapY*)
@@ -206,7 +211,7 @@
            ((eq 1 *choiceDir*) (updateAction 'right))
            ((eq 2 *choiceDir*) (updateAction 'down))
            ((eq 3 *choiceDir*) (updateAction 'left))
-           (t (format t "this should not happen: *choiceDir* = ~A~%" *choiceDir*)
+           (t (format t "This should not happen: *choiceDir* = ~A~%" *choiceDir*)
             NIL))
          ))
       
@@ -244,11 +249,13 @@
                (setf *choiceDir* 3))))
 
        
-       (format t "~%Visited Map:~%")
-       (printMap *visited* *mapY* *mapX*)
+       (when (> *debug* 1)
+         (format t "~%Visited Map:~%")
+         (printMap *visited* *mapY* *mapX*))
        (if (allAdjVisited)
            (progn
-             (format t "NO MORE NOTHING!!!!~%")
+             (when (> *debug* 1)
+               (format t "NO MORE NOTHING!!!!~%"))
              (moveToClosest))
 
            (cond
@@ -593,7 +600,8 @@
             (progn
               (setf (aref *floodMap* i j) 0)
               (incf count)))))
-    (format t "CANDIDATE COUNT: ~A~%" count)
+    (when (> *debug* 1)
+      (format t "CANDIDATE COUNT: ~A~%" count))
     (if (eq 0 count)
 	(progn
 	  (setf *explored* T)
@@ -617,8 +625,9 @@
 
 (defun patrol ()
   "Called after entire *map* has been *visited*, used to clean up after cats"
-  (format t "*map*~%")
-  (printMap *map* *mapY* *mapX*)
+  (when (> *debug* 1)
+    (format t "*map*~%")
+    (printMap *map* *mapY* *mapX*))
 
   ;;(format t "*seenCurrentPatrol*~%")
   ;;(printMap *seenCurrentPatrol* *mapX* *mapY*)
@@ -637,11 +646,13 @@
   )
 
 (defun traceToClosest ()
-  (format t "IN TRACE TO CLOSEST")
+  (when (> *debug* 1)
+    (format t "IN TRACE TO CLOSEST~%"))
   (let* ((x *currX*) (y *currY*) (dir 0)
          (fValue (aref *floodMap* y x)))
-    (format t "fValue: ~A~%" fValue)
-    (format t "Curr: ~A ~A ~%" x y)
+    (when (> *debug* 1)
+      (format t "fValue: ~A~%" fValue)
+      (format t "Curr: ~A ~A ~%" x y))
     (if (> fValue 0)
 	(progn
 	  (loop while (> fValue 0) do

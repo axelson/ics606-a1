@@ -12,7 +12,8 @@
 
 (defmethod print-structure ((agent agent) stream)
   "Agents are printed by showing their name (or body) and score."
-  (format t "print-structure: agent-name: ~A~%" (agent-name agent))
+  (when nil
+    (format t "print-structure: agent-name: ~A~%" (agent-name agent)))
   (format stream "[~A = ~D]" (or (agent-name agent) (agent-body agent))
 	  (agent-score agent)))
 

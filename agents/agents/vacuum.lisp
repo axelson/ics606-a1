@@ -25,50 +25,39 @@
   (defparameter *map* (make-array (list *mapY* *mapX*) :initial-element 0))
   (defparameter *visited* (make-array (list *mapY* *mapX*) :initial-element 0)
     "Map showing when each cell was last visited")
-  (defparameter *patrolMap* (make-array (list *mapY* *mapX*) :initial-element 0)
-    "Map showing when each cell was last visited while patrolling")
+  ;;(defparameter *seenCurrentPatrol* (make-array (list *mapY* *mapX*) :initial-element 0)
+    ;;"Map showing when each cell was last visited while patrolling")
   (defparameter *floodMap* (make-array (list *mapY* *mapX*))))
 
 (defun chris-play ()
   "Reset vacuum variables and launches vacuum"
-  (setf *explored* NIL)
-  (setf *moveNo* 1)
-  (setf *visitNo* 1)
-  (setf *stepCounter* 0)
-  ;; TODO read *mapX* and *mapY* from the *map* file
-  (setf *mapX* 12)
-  (setf *mapY* 8)
-  (setf *currX* 1)
-  (setf *currY* 1)
-  (setf *heading* 1)
-  (setf *choiceDir* 0)
-  (setf *amount* 0)
-  (setf *plan* 0)
-  (setf *planX* 0)
-  (setf *planY* 0)
-  (setf *goHome* 0)
-  (setf *lastMove* -1)
-  (setf *map* (make-array (list *mapY* *mapX*) :initial-element 0))
-  (setf *visited* (make-array (list *mapY* *mapX*) :initial-element 0))
-  (setf *patrolMap* (make-array (list *mapY* *mapX*) :initial-element 0))
-  (setf *floodMap* (make-array (list *mapY* *mapX*)))
-  (format t "All variables have been reset")
-                                        ; Create walls
-  (loop for i from 0 to (1- *mapY*) do
-    (progn
-      (setf (aref *map* i 0) -1)
-      (setf (aref *visited* i 0) -1)
-      (setf (aref *map* i (1- *mapX*)) -1)
-      (setf (aref *visited* i (1- *mapX*)) -1)))
-  (loop for i from 0 to (1- *mapX*) do
-    (progn
-      (setf (aref *map* 0 i) -1)
-      (setf (aref *visited* 0 i) -1)
-      (setf (aref *map* (1- *mapY*) i) -1)
-      (setf (aref *visited* (1- *mapY*) i) -1)))
+  (let ((room-x-y-cons (read-room)))
+    (setf *explored* NIL)
+    (setf *moveNo* 1)
+    (setf *visitNo* 1)
+    (setf *stepCounter* 0)
+    ;; TODO read *mapX* and *mapY* from the *map* file
+    (setf *mapX* (car room-x-y-cons))
+    (setf *mapY* (cdr room-x-y-cons))
+    (setf *currX* 1)
+    (setf *currY* 1)
+    (setf *heading* 1)
+    (setf *choiceDir* 0)
+    (setf *amount* 0)
+    (setf *plan* 0)
+    (setf *planX* 0)
+    (setf *planY* 0)
+    (setf *goHome* 0)
+    (setf *lastMove* -1)
+    (setf *map* (make-array (list *mapY* *mapX*) :initial-element 0))
+    (setf *visited* (make-array (list *mapY* *mapX*) :initial-element 0))
+    ;;(setf *seenCurrentPatrol* (make-array (list *mapY* *mapX*) :initial-element 0))
+    (setf *floodMap* (make-array (list *mapY* *mapX*)))
+    (format t "All variables have been reset")
+    ;; Create walls
+    (createWalls)
 
-  (read-a-room "default.txt")
-  (run-environment (make-vacuum-world :aspec '(jason-vacuum))))
+    (run-environment (make-vacuum-world :aspec '(jason-vacuum)))))
 
 ;;;; Some simple agents for the vacuum world
 
@@ -123,6 +112,7 @@
       (setf *plan* 0)
       (undoLastMove))
 
+    ;; Update state
     (updateMap directionsList dirtList catList furnitureList)
     (updateHeading)
 
@@ -142,16 +132,25 @@
     ;;(format t "~%Output:~%")
 
     ;; Maps
-    ;;(printMainMap *visited* *mapY* *mapX*)
+    ;;(printMap *visited* *mapY* *mapX*)
     ;;(format t "~%")
-    (printMainMap *map* *mapY* *mapX*)
+    (format t "*map*:~%")
+    (printMap *map* *mapY* *mapX*)
+
+    ;;(format t "*seenCurrentPatrol*:~%")
+    ;;(printMap *seenCurrentPatrol* *mapX* *mapY*)
+
     ;;(format t "~%")
-    ;;(printMainMap *floodMap* *mapY* *mapX*)
+    ;;(printMap *floodMap* *mapY* *mapX*)
 
     ;; If at home and need to dump or charge, do so
 
     ;; Check if need to charge
     (when (needCharge? charge)
+      (goHome))
+
+    ;; Check if need to dump
+    (when (needDump? fillPercent)
       (goHome))
 
     ;; Check if destination has been reached on planned path
@@ -162,10 +161,11 @@
       (when (and (eq 1 *planX*) (eq 1 *planY*))
         (setf *goHome* 0)))
 
-    (when *explored*
-      (format t "ROOM EXPLORED! Now Patrolling (much better than before!)")
-      (setf *explored* T)
-      (patrol))
+      (when *explored*
+        (format t "ROOM EXPLORED! Now Patrolling (much better than before!) explored: ~A~%" *explored*)
+        (setf *explored* T)
+        (format t "ROOM EXPLORED! Now Patrolling (much better than before!) explored: ~A~%" *explored*)
+        (patrol))
 
     ;; Final action
     (cond
@@ -205,7 +205,9 @@
            ((eq 0 *choiceDir*) (updateAction 'up))
            ((eq 1 *choiceDir*) (updateAction 'right))
            ((eq 2 *choiceDir*) (updateAction 'down))
-           ((eq 3 *choiceDir*) (updateAction 'left)))
+           ((eq 3 *choiceDir*) (updateAction 'left))
+           (t (format t "this should not happen: *choiceDir* = ~A~%" *choiceDir*)
+            NIL))
          ))
       
       (T
@@ -242,8 +244,8 @@
                (setf *choiceDir* 3))))
 
        
-       (format t "~%Visited~%")
-       (printMainMap *visited* *mapY* *mapX*)
+       (format t "~%Visited Map:~%")
+       (printMap *visited* *mapY* *mapX*)
        (if (allAdjVisited)
            (progn
              (format t "NO MORE NOTHING!!!!~%")
@@ -286,6 +288,22 @@
   (setf (aref *visited* *currY* *currX*) *moveNo*)
   (incf *moveNo*)
   )
+
+;; (defun updateSeen ()
+;;   "Updates adjacent squares to say they've been seen"
+;;   ;; Assumes updateMap was called
+;;   (let ((thisMap *seenCurrentPatrol*))
+;;     ;;Current square
+;;     (setMapInDirection thisMap 'current T)
+;;     ;;North
+;;     (setMapInDirection thisMap 'north T)
+;;     ;;East
+;;     (setMapInDirection thisMap 'east T)
+;;     ;;South
+;;     (setMapInDirection thisMap 'south T)
+;;     ;;West
+;;     (setMapInDirection thisMap 'west T)
+;;     ))
 
 (defun updateMap (directionsList dirtList catList furnitureList)
   "Updates *map* accordingly"
@@ -485,11 +503,11 @@
             (setf fillStatus NIL)))))
   )
 
-(defun printMainMap (thisMap height width)
+(defun printMap (mapToPrint height width)
   "Prints the main Map"
   (loop for i from (1- height) downto 0
         do (progn (loop for j from 0 to (1- width)
-                        do (format t " ~A " (aref thisMap i j)))
+                        do (format t " ~A " (aref mapToPrint i j)))
                   (format t "~%"))))
 
 (defun findNext ()
@@ -559,7 +577,11 @@
 (defun moveToClosest ()
   (generalFlood)
   (if (not *explored*)
-      (traceToClosest))
+      (traceToClosest)
+      (progn
+        ;; Patrol
+        ;; TODO fill in
+        ))
   )
 
 
@@ -575,7 +597,7 @@
     (if (eq 0 count)
 	(progn
 	  (setf *explored* T)
-	  (format t "~%MAP EXPLORED!")))
+	  (format t "~%findCandidates: Set MAP EXPLORED!")))
     ))
 
 (defun generalFlood ()
@@ -590,19 +612,28 @@
             (if (eq (aref *floodMap* i j) (1- *stepCounter*))
                 (assign j i))))
         (incf *stepCounter*)))
-    (printMainMap *floodMap* *mapY* *mapX*))
+    (printMap *floodMap* *mapY* *mapX*))
   )
 
 (defun patrol ()
   "Called after entire *map* has been *visited*, used to clean up after cats"
-  (printMainMap *map* *mapY* *mapX*)
+  (format t "*map*~%")
+  (printMap *map* *mapY* *mapX*)
+
+  ;;(format t "*seenCurrentPatrol*~%")
+  ;;(printMap *seenCurrentPatrol* *mapX* *mapY*)
   (format t "Now Patrolling~%")
+
   ;; Start at home
   (goHome)
 
-  ;; Loop until visited the entire room again
-
-  ;; We need a new map for things unvisited on this pass
+  (when (atHome?)
+    ;; Reset maps
+    (setf *visited* (make-array (list *mapY* *mapX*) :initial-element 0))
+    (setf *map* (make-array (list *mapY* *mapX*) :initial-element 0))
+    ;; Reset explored status
+    (setf *explored* NIL)
+    (createWalls))
   )
 
 (defun traceToClosest ()
@@ -649,3 +680,49 @@
   )
 
 
+;; Helper
+(defun getXCoordinate (direction)
+  "Returns x coordinate in the given direction from the current location"
+  (cond
+    ((eq direction 'current) *currX*)
+    ((eq direction 'north) *currX*)
+    ((eq direction 'south) *currX*)
+    ((eq direction 'east) (1- *currX*))
+    ((eq direction 'west) (1+ *currX*))
+    (t (format t "Error: getXCoordinate: direction ~A not recognized~%" direction))))
+
+(defun getYCoordinate (direction)
+  "Returns y coordinate in the given direction from the current location"
+  (cond
+    ((eq direction 'current) *currY*)
+    ((eq direction 'north) (1+ *currY*))
+    ((eq direction 'south) (1- *currY*))
+    ((eq direction 'east) *currY*)
+    ((eq direction 'west) *currY*)
+    (t (format t "Error: getYCoordinate: direction ~A not recognized~%" direction))))
+
+(defun atHome? ()
+  "Checks if the vacuum is currently at home"
+  (if (and (eq *currX* 1)
+           (eq *currY* 1))
+      T
+      NIL))
+
+(defun setMapInDirection (thisMap direction value)
+  (setf (aref thisMap (getXCoordinate direction) (getYCoordinate direction)) value))
+
+;;  ((numberp tempDirt) (setf (aref *map* (1+ *currY*) *currX*) (1+ tempDirt)))
+
+(defun createWalls ()
+  (loop for i from 0 to (1- *mapY*) do
+    (progn
+      (setf (aref *map* i 0) -1)
+      (setf (aref *visited* i 0) -1)
+      (setf (aref *map* i (1- *mapX*)) -1)
+      (setf (aref *visited* i (1- *mapX*)) -1)))
+  (loop for i from 0 to (1- *mapX*) do
+    (progn
+      (setf (aref *map* 0 i) -1)
+      (setf (aref *visited* 0 i) -1)
+      (setf (aref *map* (1- *mapY*) i) -1)
+      (setf (aref *visited* (1- *mapY*) i) -1))))

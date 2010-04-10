@@ -154,11 +154,13 @@
     (when (needCharge? charge)
       (goHome))
 
-    ;; Check for status on planned path
-    (when (and (eq *plan* 1) (and (eq *currX* *planX*) (eq *currY* *planY*)))
-      (setf *plan* 0)
-      (if (and (eq 1 *planX*) (eq 1 *planY*))
-          (setf *goHome* 0)))
+    ;; Check if destination has been reached on planned path
+    (when (and (eq *plan* 1)
+               (and (eq *currX* *planX*)
+                    (eq *currY* *planY*)))
+      (setf *plan* 0)                   ;No longer planning a path
+      (when (and (eq 1 *planX*) (eq 1 *planY*))
+        (setf *goHome* 0)))
 
     (when *explored*
       (format t "ROOM EXPLORED! Now Patrolling (much better than before!)")
@@ -355,7 +357,7 @@
   )
 
 (defun updateAction (action)
-  "Performs various updates per action taken"
+  "Performs various updates per action taken and returns action to be done"
   ;; suck forward turn (L,R) shut-off up down left right charge dump
   (cond
     ((eq action 'suck) (progn

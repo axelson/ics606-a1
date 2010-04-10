@@ -175,12 +175,10 @@
        (updateAction 'suck))
 
       ;; If at home check if need to charge or dump
-      (atHome
-       (cond
-         ((needCharge? charge)
-          (updateAction 'charge))
-         ((needDump? fillPercent)
-          (updateAction 'dump))))
+      ((and atHome (needCharge? charge))
+       (updateAction 'charge))
+      ((and atHome (needDump? fillPercent))
+       (updateAction 'dump))
       
       ;; there's currently a plan, so follow it
       ((eq *plan* 1)

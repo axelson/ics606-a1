@@ -180,84 +180,83 @@
       ((and atHome (needDump? fillPercent))
        (updateAction 'dump))
       
-      ;; there's currently a plan, so follow it
+      ;; There's currently a plan, so follow it
       ((eq *plan* 1)
-       (progn
-         (let ((*choiceDir* 0)
-               (*amount* (aref *floodMap* (1+ *currY*) *currX*)))
-           ;; East
-           (if (< (aref *floodMap* *currY* (1+ *currX*)) *amount*)
-               (progn
-                 (setf *amount* (aref *floodMap* *currY* (1+ *currX*)))
-                 (setf *choiceDir* 1)))
-           ;; South
-           (if (< (aref *floodMap* (1- *currY*) *currX*) *amount*)
-               (progn
-                 (setf *amount* (aref *floodMap* (1- *currY*) *currX*))
-                 (setf *choiceDir* 2)))
-           ;; West
-           (if (< (aref *floodMap* *currY* (1- *currX*)) *amount*)
-               (progn
-                 (setf *amount* (aref *floodMap* *currY* (1- *currX*)))
-                 (setf *choiceDir* 3)))
-           
-           ;; Action
+       (let ((*choiceDir* 0)
+             (*amount* (aref *floodMap* (1+ *currY*) *currX*)))
+         ;; East
+         (if (< (aref *floodMap* *currY* (1+ *currX*)) *amount*)
+             (progn
+               (setf *amount* (aref *floodMap* *currY* (1+ *currX*)))
+               (setf *choiceDir* 1)))
+         ;; South
+         (if (< (aref *floodMap* (1- *currY*) *currX*) *amount*)
+             (progn
+               (setf *amount* (aref *floodMap* (1- *currY*) *currX*))
+               (setf *choiceDir* 2)))
+         ;; West
+         (if (< (aref *floodMap* *currY* (1- *currX*)) *amount*)
+             (progn
+               (setf *amount* (aref *floodMap* *currY* (1- *currX*)))
+               (setf *choiceDir* 3)))
+         
+         ;; Action
+         (cond
+           ((eq 0 *choiceDir*) (updateAction 'up))
+           ((eq 1 *choiceDir*) (updateAction 'right))
+           ((eq 2 *choiceDir*) (updateAction 'down))
+           ((eq 3 *choiceDir*) (updateAction 'left)))
+         ))
+      
+      (T
+       ;; North
+       (let ((amountT (aref *map* (1+ *currY*) *currX*))
+             (visitNoT (aref *visited* (1+ *currY*) *currX*)))
+         ;; TODO why are the global variables being set here
+         (setf *amount* amountT)
+         (setf *visitNo* visitNoT)
+         (setf *choiceDir* 0))
+       ;; East
+       (let ((amountT (aref *map* *currY* (1+ *currX*)))
+             (visitNoT (aref *visited* *currY* (1+ *currX*))))
+         (if (or (> amountT *amount*) (and (eq *amount* amountT) (< visitNoT *visitNo*) (>= visitNoT 0)))
+             (progn
+               (setf *amount* amountT)
+               (setf *visitNo* visitNoT)
+               (setf *choiceDir* 1))))
+       ;; South
+       (let ((amountT (aref *map* (1- *currY*) *currX*))
+             (visitNoT (aref *visited* (1- *currY*) *currX*)))
+         (if (or (> amountT *amount*) (and (eq *amount* amountT) (< visitNoT *visitNo*) (>= visitNoT 0)))
+             (progn
+               (setf *amount* amountT)
+               (setf *visitNo* visitNoT)
+               (setf *choiceDir* 2))))
+       ;; West
+       (let ((amountT (aref *map* *currY* (1- *currX*)))
+             (visitNoT (aref *visited* *currY* (1- *currX*))))
+         (if (or (> amountT *amount*) (and (eq *amount* amountT) (< visitNoT *visitNo*) (>= visitNoT 0)))
+             (progn
+               (setf *amount* amountT)
+               (setf *visitNo* visitNoT)
+               (setf *choiceDir* 3))))
+
+       
+       (format t "~%Visited~%")
+       (printMainMap *visited* *mapY* *mapX*)
+       (if (allAdjVisited)
+           (progn
+             (format t "NO MORE NOTHING!!!!~%")
+             (moveToClosest))
+
            (cond
              ((eq 0 *choiceDir*) (updateAction 'up))
              ((eq 1 *choiceDir*) (updateAction 'right))
              ((eq 2 *choiceDir*) (updateAction 'down))
-             ((eq 3 *choiceDir*) (updateAction 'left)))
-           )))
-      
-      (T (progn
-           ;; North
-           (let ((amountT (aref *map* (1+ *currY*) *currX*))
-                 (visitNoT (aref *visited* (1+ *currY*) *currX*)))
-             ;; TODO why are the global variables being set here
-             (setf *amount* amountT)
-             (setf *visitNo* visitNoT)
-             (setf *choiceDir* 0))
-           ;; East
-           (let ((amountT (aref *map* *currY* (1+ *currX*)))
-                 (visitNoT (aref *visited* *currY* (1+ *currX*))))
-             (if (or (> amountT *amount*) (and (eq *amount* amountT) (< visitNoT *visitNo*) (>= visitNoT 0)))
-                 (progn
-                   (setf *amount* amountT)
-                   (setf *visitNo* visitNoT)
-                   (setf *choiceDir* 1))))
-           ;; South
-           (let ((amountT (aref *map* (1- *currY*) *currX*))
-                 (visitNoT (aref *visited* (1- *currY*) *currX*)))
-             (if (or (> amountT *amount*) (and (eq *amount* amountT) (< visitNoT *visitNo*) (>= visitNoT 0)))
-                 (progn
-                   (setf *amount* amountT)
-                   (setf *visitNo* visitNoT)
-                   (setf *choiceDir* 2))))
-           ;; West
-           (let ((amountT (aref *map* *currY* (1- *currX*)))
-                 (visitNoT (aref *visited* *currY* (1- *currX*))))
-             (if (or (> amountT *amount*) (and (eq *amount* amountT) (< visitNoT *visitNo*) (>= visitNoT 0)))
-                 (progn
-                   (setf *amount* amountT)
-                   (setf *visitNo* visitNoT)
-                   (setf *choiceDir* 3))))
-
-           
-           (format t "~%Visited~%")
-           (printMainMap *visited* *mapY* *mapX*)
-           (if (allAdjVisited)
-               (progn
-                 (format t "NO MORE NOTHING!!!!~%")
-                 (moveToClosest))
-
-               (cond
-                 ((eq 0 *choiceDir*) (updateAction 'up))
-                 ((eq 1 *choiceDir*) (updateAction 'right))
-                 ((eq 2 *choiceDir*) (updateAction 'down))
-                 ((eq 3 *choiceDir*) (updateAction 'left))
-                 (T (format t "This should never happen: *choiceDir* is ~A, shutting off~%" *choiceDir*)
-                  (updateAction 'shut-off))))
-           ))
+             ((eq 3 *choiceDir*) (updateAction 'left))
+             (T (format t "This should never happen: *choiceDir* is ~A, shutting off~%" *choiceDir*)
+              (updateAction 'shut-off))))
+       )
       (T (format t "This should not happen, unable to choose what to do, so doing nothing (nil)~%")
        NIL))))
 

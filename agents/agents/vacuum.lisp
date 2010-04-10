@@ -112,160 +112,161 @@
   "When you bump, turn randomly; otherwise mostly go forward, but
   occasionally turn.  Always suck when there is dirt.")
 
+(defun jason-vacuum-agent (percept)
+  (destructuring-bind (bump dirt atHome directionsList dirtList catList furnitureList charge fillPercent) percept
+    (format t "~%BEGINNING OF CODE~%")
+    ;;(if (> *moveNo* 48)
+    (read-line)
+
+    ;; If there was a bump, undo last move (if applicable)
+    (when bump
+      (setf *plan* 0)
+      (undoLastMove))
+
+    (updateMap directionsList dirtList catList furnitureList)
+    (updateHeading)
+
+    (if (not (eq *choiceDir* -1))
+        (updateVisited))
+
+    ;;(format t "~%currX: ~A" *currX*)
+    ;;(format t "~%currY: ~A" *currY*)
+    ;;(format t "~%Heading: ")
+    ;;(cond
+    ;;((eq 0 *heading*) (format t "North"))
+    ;;((eq 1 *heading*) (format t "East"))
+    ;;((eq 2 *heading*) (format t "South"))
+    ;;((eq 3 *heading*) (format t "West"))
+    ;;(T (format t "INVALID")))
+    ;;(format t "~%")
+    ;;(format t "~%Output:~%")
+
+    ;; Maps
+    ;;(printMainMap *visited* *mapY* *mapX*)
+    ;;(format t "~%")
+    (printMainMap *map* *mapY* *mapX*)
+    ;;(format t "~%")
+    ;;(printMainMap *floodMap* *mapY* *mapX*)
+
+    ;; If at home and need to dump or charge, do so
+
+    ;; Check if need to charge
+    (when (needCharge? charge)
+      (goHome))
+
+    ;; Check for status on planned path
+    (when (and (eq *plan* 1) (and (eq *currX* *planX*) (eq *currY* *planY*)))
+      (setf *plan* 0)
+      (if (and (eq 1 *planX*) (eq 1 *planY*))
+          (setf *goHome* 0)))
+
+    (when *explored*
+      (format t "ROOM EXPLORED! Now Patrolling (much better than before!)")
+      (setf *explored* T)
+      (patrol))
+
+    ;; Final action
+    (cond
+      ;; If dirt in current cell, suck it (unless currently going home)
+      ((and dirt (eq *goHome* 0))
+       (setf *choiceDir* -1)
+       (updateAction 'suck))
+
+      ;; If at home check if need to charge or dump
+      (atHome
+       (cond
+         ((needCharge? charge)
+          (updateAction 'charge))
+         ((needDump? fillPercent)
+          (updateAction 'dump))))
+      
+      ;; there's currently a plan, so follow it
+      ((eq *plan* 1)
+       (progn
+         (let ((*choiceDir* 0)
+               (*amount* (aref *floodMap* (1+ *currY*) *currX*)))
+           ;; East
+           (if (< (aref *floodMap* *currY* (1+ *currX*)) *amount*)
+               (progn
+                 (setf *amount* (aref *floodMap* *currY* (1+ *currX*)))
+                 (setf *choiceDir* 1)))
+           ;; South
+           (if (< (aref *floodMap* (1- *currY*) *currX*) *amount*)
+               (progn
+                 (setf *amount* (aref *floodMap* (1- *currY*) *currX*))
+                 (setf *choiceDir* 2)))
+           ;; West
+           (if (< (aref *floodMap* *currY* (1- *currX*)) *amount*)
+               (progn
+                 (setf *amount* (aref *floodMap* *currY* (1- *currX*)))
+                 (setf *choiceDir* 3)))
+           
+           ;; Action
+           (cond
+             ((eq 0 *choiceDir*) (updateAction 'up))
+             ((eq 1 *choiceDir*) (updateAction 'right))
+             ((eq 2 *choiceDir*) (updateAction 'down))
+             ((eq 3 *choiceDir*) (updateAction 'left)))
+           )))
+      
+      (T (progn
+           ;; North
+           (let ((amountT (aref *map* (1+ *currY*) *currX*))
+                 (visitNoT (aref *visited* (1+ *currY*) *currX*)))
+             ;; TODO why are the global variables being set here
+             (setf *amount* amountT)
+             (setf *visitNo* visitNoT)
+             (setf *choiceDir* 0))
+           ;; East
+           (let ((amountT (aref *map* *currY* (1+ *currX*)))
+                 (visitNoT (aref *visited* *currY* (1+ *currX*))))
+             (if (or (> amountT *amount*) (and (eq *amount* amountT) (< visitNoT *visitNo*) (>= visitNoT 0)))
+                 (progn
+                   (setf *amount* amountT)
+                   (setf *visitNo* visitNoT)
+                   (setf *choiceDir* 1))))
+           ;; South
+           (let ((amountT (aref *map* (1- *currY*) *currX*))
+                 (visitNoT (aref *visited* (1- *currY*) *currX*)))
+             (if (or (> amountT *amount*) (and (eq *amount* amountT) (< visitNoT *visitNo*) (>= visitNoT 0)))
+                 (progn
+                   (setf *amount* amountT)
+                   (setf *visitNo* visitNoT)
+                   (setf *choiceDir* 2))))
+           ;; West
+           (let ((amountT (aref *map* *currY* (1- *currX*)))
+                 (visitNoT (aref *visited* *currY* (1- *currX*))))
+             (if (or (> amountT *amount*) (and (eq *amount* amountT) (< visitNoT *visitNo*) (>= visitNoT 0)))
+                 (progn
+                   (setf *amount* amountT)
+                   (setf *visitNo* visitNoT)
+                   (setf *choiceDir* 3))))
+
+           
+           (format t "~%Visited~%")
+           (printMainMap *visited* *mapY* *mapX*)
+           (if (allAdjVisited)
+               (progn
+                 (format t "NO MORE NOTHING!!!!~%")
+                 (moveToClosest))
+
+               (cond
+                 ((eq 0 *choiceDir*) (updateAction 'up))
+                 ((eq 1 *choiceDir*) (updateAction 'right))
+                 ((eq 2 *choiceDir*) (updateAction 'down))
+                 ((eq 3 *choiceDir*) (updateAction 'left))
+                 (T (format t "This should never happen: *choiceDir* is ~A, shutting off~%" *choiceDir*)
+                  (updateAction 'shut-off))))
+           ))
+      (T (format t "This should not happen, unable to choose what to do, so doing nothing (nil)~%")
+       NIL))))
 
 (defstructure
     (jason-vacuum 
      (:include
       agent
       (program
-       #'(lambda (percept)
-	   (destructuring-bind (bump dirt atHome directionsList dirtList catList furnitureList charge fillPercent) percept
-	     (format t "~%BEGINNING OF CODE~%")
-             ;;(if (> *moveNo* 48)
-	     (read-line)
-
-	     ;; If there was a bump, undo last move (if applicable)
-	     (when bump
-               (setf *plan* 0)
-               (undoLastMove))
-
-	     (updateMap directionsList dirtList catList furnitureList)
-	     (updateHeading)
-
-             (if (not (eq *choiceDir* -1))
-		 (updateVisited))
-
-             ;;(format t "~%currX: ~A" *currX*)
-             ;;(format t "~%currY: ~A" *currY*)
-             ;;(format t "~%Heading: ")
-             ;;(cond
-             ;;((eq 0 *heading*) (format t "North"))
-             ;;((eq 1 *heading*) (format t "East"))
-             ;;((eq 2 *heading*) (format t "South"))
-             ;;((eq 3 *heading*) (format t "West"))
-             ;;(T (format t "INVALID")))
-             ;;(format t "~%")
-             ;;(format t "~%Output:~%")
-
-	     ;; Maps
-	     ;;(printMainMap *visited* *mapY* *mapX*)
-	     ;;(format t "~%")
-	     (printMainMap *map* *mapY* *mapX*)
-	     ;;(format t "~%")
-	     ;;(printMainMap *floodMap* *mapY* *mapX*)
-
-             ;; If at home and need to dump or charge, do so
-
-	     ;; Check if need to charge
-	     (when (needCharge? charge)
-               (goHome))
-
-	     ;; Check for status on planned path
-	     (when (and (eq *plan* 1) (and (eq *currX* *planX*) (eq *currY* *planY*)))
-               (setf *plan* 0)
-               (if (and (eq 1 *planX*) (eq 1 *planY*))
-                   (setf *goHome* 0)))
-
-	     (when *explored*
-               (format t "ROOM EXPLORED! Now Patrolling (much better than before!)")
-               (setf *explored* T)
-               (patrol))
-
-	     ;; Final action
-	     (cond
-               ;; If dirt in current cell, suck it (unless currently going home)
-               ((and dirt (eq *goHome* 0))
-                (setf *choiceDir* -1)
-                (updateAction 'suck))
-
-               ;; If at home check if need to charge or dump
-               (atHome
-                (cond
-                  ((needCharge? charge)
-                   (updateAction 'charge))
-                  ((needDump? fillPercent)
-                   (updateAction 'dump))))
-               
-               ;; there's currently a plan, so follow it
-               ((eq *plan* 1)
-                (progn
-                  (let ((*choiceDir* 0)
-                        (*amount* (aref *floodMap* (1+ *currY*) *currX*)))
-                    ;; East
-                    (if (< (aref *floodMap* *currY* (1+ *currX*)) *amount*)
-                        (progn
-                          (setf *amount* (aref *floodMap* *currY* (1+ *currX*)))
-                          (setf *choiceDir* 1)))
-                    ;; South
-                    (if (< (aref *floodMap* (1- *currY*) *currX*) *amount*)
-                        (progn
-                          (setf *amount* (aref *floodMap* (1- *currY*) *currX*))
-                          (setf *choiceDir* 2)))
-                    ;; West
-                    (if (< (aref *floodMap* *currY* (1- *currX*)) *amount*)
-                        (progn
-                          (setf *amount* (aref *floodMap* *currY* (1- *currX*)))
-                          (setf *choiceDir* 3)))
-                    
-                    ;; Action
-                    (cond
-                      ((eq 0 *choiceDir*) (updateAction 'up))
-                      ((eq 1 *choiceDir*) (updateAction 'right))
-                      ((eq 2 *choiceDir*) (updateAction 'down))
-                      ((eq 3 *choiceDir*) (updateAction 'left)))
-                    )))
-               
-               (T (progn
-                    ;; North
-                    (let ((amountT (aref *map* (1+ *currY*) *currX*))
-                          (visitNoT (aref *visited* (1+ *currY*) *currX*)))
-                      ;; TODO why are the global variables being set here
-                      (setf *amount* amountT)
-                      (setf *visitNo* visitNoT)
-                      (setf *choiceDir* 0))
-                    ;; East
-                    (let ((amountT (aref *map* *currY* (1+ *currX*)))
-                          (visitNoT (aref *visited* *currY* (1+ *currX*))))
-                      (if (or (> amountT *amount*) (and (eq *amount* amountT) (< visitNoT *visitNo*) (>= visitNoT 0)))
-                          (progn
-                            (setf *amount* amountT)
-                            (setf *visitNo* visitNoT)
-                            (setf *choiceDir* 1))))
-                    ;; South
-                    (let ((amountT (aref *map* (1- *currY*) *currX*))
-                          (visitNoT (aref *visited* (1- *currY*) *currX*)))
-                      (if (or (> amountT *amount*) (and (eq *amount* amountT) (< visitNoT *visitNo*) (>= visitNoT 0)))
-                          (progn
-                            (setf *amount* amountT)
-                            (setf *visitNo* visitNoT)
-                            (setf *choiceDir* 2))))
-                    ;; West
-                    (let ((amountT (aref *map* *currY* (1- *currX*)))
-                          (visitNoT (aref *visited* *currY* (1- *currX*))))
-                      (if (or (> amountT *amount*) (and (eq *amount* amountT) (< visitNoT *visitNo*) (>= visitNoT 0)))
-                          (progn
-                            (setf *amount* amountT)
-                            (setf *visitNo* visitNoT)
-                            (setf *choiceDir* 3))))
-
-                    
-                    (format t "~%Visited~%")
-                    (printMainMap *visited* *mapY* *mapX*)
-                    (if (allAdjVisited)
-                        (progn
-                          (format t "NO MORE NOTHING!!!!~%")
-                          (moveToClosest))
-
-                        (cond
-                          ((eq 0 *choiceDir*) (updateAction 'up))
-                          ((eq 1 *choiceDir*) (updateAction 'right))
-                          ((eq 2 *choiceDir*) (updateAction 'down))
-                          ((eq 3 *choiceDir*) (updateAction 'left))
-                          (T (format t "This should never happen: *choiceDir* is ~A, shutting off~%" *choiceDir*)
-                           (updateAction 'shut-off))))
-                    ))
-               (T (format t "This should not happen, unable to choose what to do, so doing nothing (nil)~%")
-                NIL)))))))
+       #'jason-vacuum-agent)))
     "A very stupid agent")
 
 ;;Agent needs

@@ -133,7 +133,7 @@
       (format stream "~&At Time step ~D:~%" (environment-step env))
       (when (> (environment-step env) 0)
 	(for each agent in (environment-agents env) do
-	    (when nil
+	    (when t
 	     (format stream 
 		     "~&Agent ~A perceives ~A~%~6Tand does ~A~%"
 		     agent (agent-percept agent)

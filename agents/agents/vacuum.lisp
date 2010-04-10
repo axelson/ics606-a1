@@ -17,7 +17,7 @@
   (defparameter *heading* 1)
   (defparameter *choiceDir* 0)
   (defparameter *amount* 0)
-  (defparameter *plan* 0)
+  (defparameter *plan* 0 "1 when there is a planned path")
   (defparameter *planX* 0)
   (defparameter *planY* 0)
   (defparameter *goHome* 0)
@@ -186,6 +186,7 @@
                   ((needDump? fillPercent)
                    (updateAction 'dump))))
                
+               ;; there's currently a plan, so follow it
                ((eq *plan* 1)
                 (progn
                   (let ((*choiceDir* 0)
@@ -260,11 +261,11 @@
                           ((eq 1 *choiceDir*) (updateAction 'right))
                           ((eq 2 *choiceDir*) (updateAction 'down))
                           ((eq 3 *choiceDir*) (updateAction 'left))
-                          (T (progn
-                               ;;TODO - Ask Chris - What is this supposed to be doing? Should this ever even happen? Why not print an error
-                               ;;(flood)     ; JAX I had to comment this out since this function doesn't exist
-                               (updateAction 'shut-off)))))
-                    ))))))))
+                          (T (format t "This should never happen: *choiceDir* is ~A, shutting off~%" *choiceDir*)
+                           (updateAction 'shut-off))))
+                    ))
+               (T (format t "This should not happen, unable to choose what to do, so doing nothing (nil)~%")
+                NIL)))))))
     "A very stupid agent")
 
 ;;Agent needs
@@ -354,7 +355,7 @@
 
 (defun updateAction (action)
   "Performs various updates per action taken"
-  ; suck forward turn (L,R) shut-off up down left right
+  ;; suck forward turn (L,R) shut-off up down left right charge dump
   (cond
     ((eq action 'suck) (progn
 			 (if (> (aref *map* *currY* *currX*) 1)

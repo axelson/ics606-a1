@@ -31,7 +31,9 @@
 
 (defun play ()
   (when (not (read-room))
-    (return-from play))
+    (format t "read-room failed~%")
+    (format t "read-room returns: ~A" (read-room))
+    (return-from play nil))
   (run-environment (make-vacuum-world :aspec '(stupid-vacuum))))
 
 (defmethod termination? ((env vacuum-world))
@@ -72,9 +74,10 @@
                      (setf room-ok nil)
                      (format t "Sorry, file ~A does not exist, please choose another or type exit to exit~%" filename))
                    (setf room-ok (read-a-room filename)))))
-        until room-ok)
+        until room-ok
+        finally (return room-ok))
   ;; Return true indicating success
-  t)
+  )
 
 (defun read-a-room (filename)
   ;; Get the file to read
@@ -139,7 +142,36 @@
                     furniture)
                    (format t "current furniture: ~A~%" furniture)
                    )))))
-  t)
+  (cons room-x room-y))
+
+;; (defun read-room-size-x (filename)
+;;   ;; Get the file to read
+;;   (with-open-file (infile filename)
+;;     (setf cats '())
+;;     (setf furniture '())
+;;     (let ((line (read-next-line infile)))
+;;       ;;Room size
+;;       (read-both-numbers line room-x room-y)
+;;       (format t "~%room is: ~A by ~A~%" room-x room-y)
+;;       (if (or (> room-x 20)
+;;               (> room-y 20))
+;;           (format t "Error: Room Size too Large: ~A by ~A~%" room-x room-y)
+;;           room-x))))
+
+
+;; (defun read-room-size-y (filename)
+;;   ;; Get the file to read
+;;   (with-open-file (infile filename)
+;;     (setf cats '())
+;;     (setf furniture '())
+;;     (let ((line (read-next-line infile)))
+;;       ;;Room size
+;;       (read-both-numbers line room-x room-y)
+;;       (format t "~%room is: ~A by ~A~%" room-x room-y)
+;;       (if (or (> room-x 20)
+;;               (> room-y 20))
+;;           (format t "Error: Room Size too Large: ~A by ~A~%" room-x room-y)
+;;           room-y))))
 
 
 (defun read-first-number (instring)
@@ -188,6 +220,9 @@
     (setf returnlist
           (append returnlist
                   (list (list 'at 'all (list 'p (/ dirt-factor 10) 'dirt)))))
+    (setf returnlist
+          (append returnlist
+                  (list '(at (1 1) (* 3 dirt)))))
     returnlist))
 
 (defun generate-furniture (startloc endloc)

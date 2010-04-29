@@ -136,9 +136,9 @@
     ;;(format t "~%Output:~%")
 
     ;; Maps
-    ;;(printMap *visited* *mapY* *mapX*)
+    (printMap *visited* *mapY* *mapX*)
     ;;(format t "~%")
-    (when (> *debug* 1)
+    (when (> *debug* -1)
       (format t "*map*:~%")
       (printMap *map* *mapY* *mapX*))
 
@@ -281,7 +281,7 @@
 (defun needCharge? (charge)
   "Checks if the agent currently needs a charge"
   ;;TODO - figure out what this does
-  (< charge (* (/ 0.25 2) (* *mapY* *mapX*))))
+  (< charge 55))
 
 (defun needDump? (fillPercent)
   "Checks if the agent currently needs to dump"

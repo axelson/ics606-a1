@@ -11,7 +11,7 @@
     ))
   "A grid with some dirt in it, and by default a reactive vacuum agent.")
 
-(defstructure (dirt (:include object (name "*") (size 0.01))))
+(defstructure (dirt (:include object (name "*") (size 0.02))))
 
 (defstructure (furniture (:include obstacle (name "F") (size 0.01))))
 
@@ -284,7 +284,7 @@
 
 ;;;; Actions (other than the basic grid actions of forward and turn)
 
-(defmethod expend-energy ((env vacuum-world) agent-body &optional (energy 1.25))
+(defmethod expend-energy ((env vacuum-world) agent-body &optional (energy 2.25))
   (when (> *debug* 1)
     (format t "expend-energy: expending ~A energy leaving " energy))
   (setf (agent-body-charge agent-body) (- (agent-body-charge agent-body)

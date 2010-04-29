@@ -1,1 +1,1 @@
-cat.txt
+a1inputspecification.txt
